@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Quotation List</h2>
+
+  <!-- Add Quotation button -->
+  <a href="{% url 'create_quotation' %}" class="btn" style="margin-bottom:1rem;">
+    <i class="fa fa-file-alt"></i> Create New Quotation
+  </a>
+
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Date</th>
+        <th>Total</th>
+        <th>Actions</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      {% for quotation in quotations %}
+        <tr>
+          <td>{{ quotation.customer }}</td>
+          <td>{{ quotation.date }}</td>
+          <td>₹{{ quotation.total_with_tax|floatformat:2 }}</td>
+          <td>
+            <a href="{% url 'quotation_detail' quotation.id %}">View</a>
+            &nbsp;|&nbsp;
+            <a href="{% url 'edit_quotation' quotation.id %}">Edit</a>
+            &nbsp;|&nbsp;
+            <a href="{% url 'performa_create' quotation.id %}">Performa</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3">No quotations found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

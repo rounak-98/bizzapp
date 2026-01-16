@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Select Quotation for Performa Invoice</h2>
+    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+    <label for="quick-performa">Quick Performa:</label>
+    <select id="quick-performa">
+      <option value="">Select quotation</option>
+      {% for q in quotations %}
+        <option value="{{ q.id }}">#{{ q.id }} — {{ q.customer }} — ₹{{ q.total_with_tax|floatformat:2 }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn" id="create-performa-btn">Create</button>
+    <button class="btn" id="print-performa-btn">Print</button>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      var createBtn = document.getElementById('create-performa-btn');
+      var printBtn = document.getElementById('print-performa-btn');
+      function getSelectedId(){
+        return document.getElementById('quick-performa').value;
+      }
+      if(createBtn){
+        createBtn.addEventListener('click', function(){
+          var id = getSelectedId();
+          if(id){
+            window.location = '{% url "performa_create" 0 %}'.replace('/0/', '/' + id + '/');
+          } else {
+            alert('Please select a quotation first.');
+          }
+        });
+      }
+      if(printBtn){
+        printBtn.addEventListener('click', function(){
+          var id = getSelectedId();
+          if(id){
+            window.open('{% url "performa_invoice" 0 %}'.replace('/0/', '/' + id + '/'), '_blank');
+          } else {
+            alert('Please select a quotation first.');
+          }
+        });
+      }
+    });
+  </script>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Quotation</th>
+        <th>Customer</th>
+        <th>Date</th>
+        <th>Total</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for quotation in quotations %}
+      <tr>
+        <td>#{{ quotation.id }}</td>
+        <td>{{ quotation.customer }}</td>
+        <td>{{ quotation.date }}</td>
+        <td>₹{{ quotation.total_with_tax|floatformat:2 }}</td>
+        <td>
+          <a href="{% url 'performa_create' quotation.id %}">Create</a>
+          &nbsp;|&nbsp;
+          <a href="{% url 'performa_invoice' quotation.id %}" target="_blank">Print</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No quotations found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

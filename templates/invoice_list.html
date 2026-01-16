@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Invoice List</h2>
+
+  <!-- Add Invoice button -->
+  <a href="{% url 'create_invoice' %}" class="btn" style="margin-bottom:1rem;">
+    <i class="fa fa-plus-circle"></i> Add Invoice
+  </a>
+
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Quotation</th>
+        <th>Date</th>
+        <th>Total Amount</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invoice in invoices %}
+        <tr>
+          <td>{{ invoice.quotation }}</td>
+          <td>{{ invoice.issued_date }}</td>
+          <td>₹{{ invoice.total_amount|floatformat:2 }}</td>
+          <td>
+            <a href="{% url 'invoice_detail' invoice.id %}">View</a>
+            &nbsp;|&nbsp;
+            <a href="{% url 'invoice_detail' invoice.id %}#print">Print</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No invoices found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

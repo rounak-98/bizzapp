@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Add Term</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">
+      <i class="fa fa-file-contract"></i> Save Term
+    </button>
+  </form>
+</div>
+{% endblock %}

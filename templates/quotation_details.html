@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <!-- Company Info -->
+  <h2>{{ company.name }}</h2>
+  <h3 style="margin-top:0.25rem;">Quotation{% if quotation.id %} #{{ quotation.id }}{% endif %}</h3>
+  <p><strong>GST No:</strong> {{ company.gst_no }}</p>
+  <p><strong>Email:</strong> {{ company.email }}</p>
+  <p><strong>Account:</strong> {{ company.account_details }}</p>
+  <hr>
+
+  <!-- Customer Info -->
+  <h3>Customer Details</h3>
+  <p><strong>Name:</strong> {{ quotation.customer.name }}</p>
+  <p><strong>Email:</strong> {{ quotation.customer.email }}</p>
+  <p><strong>Phone:</strong> {{ quotation.customer.phone }}</p>
+  <hr>
+
+  <!-- Items -->
+  <h3>Products</h3>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>CGST</th>
+        <th>SGST</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for qi in quotation.quotationitem_set.all %}
+      <tr>
+        <td>{{ qi.item.name }}</td>
+        <td>{{ qi.quantity }}</td>
+        <td>₹{{ qi.item.price|floatformat:2 }}</td>
+        <td>₹{{ qi.cgst_amount|floatformat:2 }}</td>
+        <td>₹{{ qi.sgst_amount|floatformat:2 }}</td>
+        <td>₹{{ qi.total|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- Totals -->
+  <div class="totals">
+  <h4>Subtotal: ₹{{ quotation.subtotal|floatformat:2 }}</h4>
+  {% if quotation.gst_percent and quotation.gst_percent|floatformat:2 != '0.00' %}
+    <p>GST ({{ quotation.gst_percent }}%):</p>
+    <p>&nbsp;&nbsp;CGST: ₹{{ quotation.cgst|floatformat:2 }}</p>
+    <p>&nbsp;&nbsp;SGST: ₹{{ quotation.sgst|floatformat:2 }}</p>
+  {% endif %}
+  <h3>Total Amount: ₹{{ quotation.total_with_tax|floatformat:2 }}</h3>
+  </div>
+  <hr>
+
+  <!-- Terms -->
+  {% if quotation.terms %}
+    <h3>Terms & Conditions</h3>
+    <p>{{ quotation.terms.content }}</p>
+  {% endif %}
+
+  <!-- Print Button -->
+  <button onclick="window.print()" class="btn">
+    <i class="fa fa-print"></i> Print Quotation
+  </button>
+  <a href="{% url 'performa_create' quotation.id %}" class="btn">
+    <i class="fa fa-file-invoice"></i> Performa Invoice
+  </a>
+</div>
+{% endblock %}

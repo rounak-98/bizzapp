@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Create Invoice</h2>
+  <form method="post">
+    {% csrf_token %}
+    
+    <!-- Quotation field -->
+    <div class="form-group">
+      <label for="id_quotation">Quotation (optional)</label>
+      {{ form.quotation }}
+    </div>
+
+    <!-- GST field -->
+    <div class="form-group">
+      <label for="id_gst_percent">GST (%)</label>
+      {{ form.gst_percent }}
+    </div>
+
+    {% if formset %}
+      <h3>Items</h3>
+      {{ formset.management_form }}
+      <table class="styled-table">
+        <thead>
+          <tr><th>Item</th><th>Quantity</th></tr>
+        </thead>
+        <tbody>
+          {% for f in formset.forms %}
+            <tr>
+              <td>{{ f.item }}</td>
+              <td>{{ f.quantity }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    <button type="submit" class="btn">
+      <i class="fa fa-file-invoice"></i> Save Invoice
+    </button>
+  </form>
+</div>
+{% endblock %}

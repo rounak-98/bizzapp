@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Terms</h2>
+
+  <!-- Add Term button -->
+  <a href="{% url 'create_term' %}" class="btn" style="margin-bottom:1rem;">
+    <i class="fa fa-file-contract"></i> Add Term
+  </a>
+
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for term in terms %}
+        <tr>
+          <td>{{ term.title }}</td>
+          <td>{{ term.description }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="2">No terms found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

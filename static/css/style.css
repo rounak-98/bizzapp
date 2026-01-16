@@ -1,0 +1,455 @@
+.form-container {
+  max-width: 500px;
+  margin: 3rem auto;
+  padding: 2rem;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.08); /* translucent so backdrop-filter has pixels to blur */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  /* fallback if backdrop-filter unsupported */
+  background-clip: padding-box;
+  /* optional subtle border for older browsers */
+  border: 1px solid rgba(255,255,255,0.06);
+}* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #1e293b, #0f172a); /* dark gradient */
+  color: #fff;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #1e293b;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #38bdf8;
+}
+
+/* Active link highlight */
+.nav-links a.active {
+  color: #38bdf8;
+  font-weight: 600;
+  border-bottom: 2px solid #38bdf8;
+}
+
+/* Navbar toggle for mobile */
+.nav-toggle {
+  display: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    background: rgba(30, 41, 59, 0.95);
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 200px;
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .nav-links.show {
+    display: flex;
+  }
+
+  .nav-toggle {
+    display: block;
+    color: #fff;
+  }
+}
+
+/* Main Content Wrapper */
+.main-content {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Optional Header (Dashboard only) */
+.header {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  margin: 2rem auto;
+  max-width: 900px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #de4108;
+}
+
+.header p {
+  color: #38bdf8;
+  margin-top: 0.5rem;
+}
+
+/* Dashboard wrapper */
+.dashboard-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dashboard-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #de4108;
+}
+
+.dashboard-section {
+  margin-bottom: 3rem;
+}
+
+.dashboard-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #38bdf8;
+  text-align: left;
+  padding-left: 1rem;
+}
+
+/* Button Grid */
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  justify-items: center;
+}
+
+/* Glassmorphic Buttons */
+.btn {
+  width: 220px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Hover effect */
+.btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #1e293b;
+  color: #fff;
+  margin-top: 3rem;
+  font-size: 0.9rem;
+}
+
+/* Form container */
+.form-container {
+  max-width: 500px;
+  margin: 3rem auto;
+  padding: 2rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 1rem;
+}
+
+/* make selects readable on light backgrounds */
+.form-container select, select {
+  background-color: #fff !important;
+  color: #111 !important;
+  border: 1px solid #ccc !important;
+  padding: 0.6rem 2.5rem 0.6rem 0.6rem !important;
+  border-radius: 6px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: linear-gradient(45deg, transparent 50%, #333 50%), linear-gradient(135deg, #333 50%, transparent 50%), linear-gradient(to right, #fff, #fff);
+  background-position: calc(100% - 18px) calc(50% - 6px), calc(100% - 12px) calc(50% - 6px), 0 0;
+  background-size: 6px 6px, 6px 6px, 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* Option styling (some browsers ignore background on options) */
+select option, .form-container select option {
+  background-color: #fff !important;
+  color: #111 !important;
+}
+
+/* Focus/active states */
+.form-container select:focus, select:focus {
+  outline: none !important;
+  border-color: #888 !important;
+}
+
+/* Strong force-select rules */
+.force-select {
+  background-color: #fff !important;
+  color: #111 !important;
+  border: 1px solid #ccc !important;
+  padding: 0.6rem 2.5rem 0.6rem 0.6rem !important;
+  border-radius: 6px !important;
+  appearance: none !important;
+}
+.force-select option {
+  background: #fff !important;
+  color: #111 !important;
+}
+
+.form-container input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-container button {
+  background-color: #2563eb;
+  color: #fff;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-container button:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.05);
+}
+
+/* Item rows in quotation formset */
+.item-row {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+}
+
+/* Discover section: fixed 3-column grid with large buttons */
+.button-grid.discover {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 2rem;
+  padding: 1rem 2rem;
+  justify-items: center;
+}
+
+.button-grid.discover .btn {
+  width: 240px;
+  height: 160px;
+}
+
+/* Styled tables */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.styled-table th, .styled-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  color: #fff;
+}
+
+.styled-table th {
+  background: rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+}
+
+.styled-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.styled-table tr:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 0.3s ease, transform 0.2s ease;
+  transform: scale(1.01);
+}
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge-paid {
+  background-color: #16a34a; /* green */
+}
+
+.badge-pending {
+  background-color: #f59e0b; /* orange */
+}
+
+.badge-overdue {
+  background-color: #dc2626; /* red */
+}
+
+/* Stock badges */
+.badge-stock {
+  background-color: #2563eb; /* blue */
+}
+.badge-low {
+  background-color: #f59e0b; /* orange */
+}
+.badge-out {
+  background-color: #dc2626; /* red */
+}
+
+/* Print-friendly styles */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+    font-family: "Poppins", sans-serif;
+  }
+  /* try to reduce browser-added headers by tightening page margins (browser may still add title/header/footer) */
+  @page { margin: 10mm; }
+
+  .navbar, .footer, .nav-toggle, .logo, .nav-links { display: none !important; }
+
+  .main-content, .form-container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0.5rem !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    color: #000 !important;
+    border-radius: 0 !important;
+  }
+
+  .styled-table {
+    border: 1px solid #000;
+    width: 100% !important;
+    border-collapse: collapse;
+  }
+
+  .styled-table th, .styled-table td {
+    color: #000;
+    border: 1px solid #000;
+    padding: 6px !important;
+    font-size: 12px;
+  }
+
+  /* Hide interactive UI elements on print */
+  .btn, button, input[type="button"], .no-print { display: none !important; }
+
+  /* Ensure tables and headings align nicely */
+  h2, h3, h4 { color: #000 !important; }
+}
+
+/* Totals alignment for print and screen */
+.totals { text-align: right; }
+.totals p, .totals h3, .totals h4 { text-align: right; margin: 0.25rem 0; }
+
+.dashboard-section {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 2rem;
+}
+
+.revenue-card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #38bdf8;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}

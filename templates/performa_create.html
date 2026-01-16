@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Create Performa Invoice for Quotation #{{ quotation.id }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn"><i class="fa fa-file-invoice"></i> Generate Performa</button>
+    <a href="{% url 'quotation_detail' quotation.id %}" class="btn">Back</a>
+  </form>
+</div>
+{% endblock %}

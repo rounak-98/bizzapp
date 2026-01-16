@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="header">
+  <h1>Welcome ROUNAK</h1>
+  <p>Manage your business efficiently and professionally</p>
+</header>
+
+<div class="dashboard-wrapper">
+  <h2 class="dashboard-title">Dashboard</h2>
+
+  <!-- Manage Section (responsive) -->
+  <div class="dashboard-section">
+    <h3>Manage</h3>
+    <div class="button-grid">
+      <a href="{% url 'company_info' %}" class="btn"><i class="fa fa-building"></i> Company Info</a>
+      <a href="{% url 'customer_list' %}" class="btn"><i class="fa fa-users"></i> Customers</a>
+      <a href="{% url 'item_list' %}" class="btn"><i class="fa fa-box"></i> Items</a>
+      <a href="{% url 'term_list' %}" class="btn"><i class="fa fa-file-contract"></i> Terms</a>
+    </div>
+  </div>
+
+  <!-- Discover Section (fixed 3-column layout) -->
+  <div class="dashboard-section">
+    <h3>Discover</h3>
+    <div class="button-grid discover">
+      <a href="{% url 'create_quotation' %}" class="btn"><i class="fa fa-pen"></i> Make Quotation</a>
+      <a href="{% url 'quotation_list' %}" class="btn"><i class="fa fa-file-alt"></i> View Quotations</a>
+      <a href="{% url 'create_invoice' %}" class="btn"><i class="fa fa-plus-circle"></i> Make Invoice</a>
+      <a href="{% url 'invoice_list' %}" class="btn"><i class="fa fa-file-invoice"></i> View Invoices</a>
+      <a href="{% url 'performa_list' %}" class="btn"><i class="fa fa-file-invoice"></i> Performa Invoice</a>
+      <a href="{% url 'revenue' %}" class="btn"><i class="fa fa-chart-line"></i> Revenue</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

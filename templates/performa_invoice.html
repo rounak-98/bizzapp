@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Performa Invoice</h2>
+  <div class="company">
+    <h3>{{ company.name }}</h3>
+    <p>GST: {{ company.gst_no }}</p>
+    <p>{{ company.email }}</p>
+  </div>
+
+  <h3>Bill To</h3>
+  <p>{{ quotation.customer.name }}</p>
+  <p>{{ quotation.customer.email }}</p>
+  <p>{{ quotation.customer.phone }}</p>
+
+  <h3>Items</h3>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>CGST</th>
+        <th>SGST</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for qi in items %}
+      <tr>
+        <td>{{ qi.item.name }}</td>
+        <td>{{ qi.quantity }}</td>
+        <td>₹{{ qi.item.price|floatformat:2 }}</td>
+        <td>₹{{ qi.cgst_amount|floatformat:2 }}</td>
+        <td>₹{{ qi.sgst_amount|floatformat:2 }}</td>
+        <td>₹{{ qi.total|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h4>Subtotal: ₹{{ quotation.subtotal|floatformat:2 }}</h4>
+  {% if quotation.gst_percent and quotation.gst_percent|floatformat:2 != '0.00' %}
+    <p>GST ({{ quotation.gst_percent }}%):</p>
+    <p>&nbsp;&nbsp;CGST: ₹{{ quotation.cgst|floatformat:2 }}</p>
+    <p>&nbsp;&nbsp;SGST: ₹{{ quotation.sgst|floatformat:2 }}</p>
+  {% endif %}
+  <h3>Total Amount: ₹{{ quotation.total_with_tax|floatformat:2 }}</h3>
+  {% if amount_paid is not None %}
+    <p><strong>Amount Paid:</strong> ₹{{ amount_paid|floatformat:2 }}</p>
+    <p><strong>Remaining:</strong> ₹{{ remaining|floatformat:2 }}</p>
+    {% if paid_on %}
+      <p><strong>Paid On:</strong> {{ paid_on }}</p>
+    {% endif %}
+    {% if note %}
+      <p><strong>Note:</strong> {{ note }}</p>
+    {% endif %}
+  {% endif %}
+
+  <div style="margin-top:1rem;">
+    <button onclick="window.print()" class="btn"><i class="fa fa-print"></i> Print Performa</button>
+    <a href="{% url 'quotation_detail' quotation.id %}" class="btn">Back</a>
+  </div>
+</div>
+{% endblock %}

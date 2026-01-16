@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <!-- Company Info -->
+  <h2>{{ company.name }}</h2>
+  <h3 style="margin-top:0.25rem;">Invoice{% if invoice.id %} #{{ invoice.id }}{% endif %}</h3>
+  <p><strong>GST No:</strong> {{ company.gst_no }}</p>
+  <p><strong>Email:</strong> {{ company.email }}</p>
+  <p><strong>Account:</strong> {{ company.account_details }}</p>
+  <hr>
+
+  <!-- Customer Info -->
+  <h3>Customer Details</h3>
+  {% if invoice.quotation and invoice.quotation.customer %}
+    <p><strong>Name:</strong> {{ invoice.quotation.customer.name }}</p>
+    <p><strong>Email:</strong> {{ invoice.quotation.customer.email }}</p>
+    <p><strong>Phone:</strong> {{ invoice.quotation.customer.phone }}</p>
+  {% else %}
+    <p><em>No customer linked to this invoice.</em></p>
+  {% endif %}
+  <hr>
+
+  <!-- Items -->
+  <h3>Products</h3>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Qty</th>
+        <th>Price</th>
+        <th>CGST</th>
+        <th>SGST</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.item.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>₹{{ item.item.price|floatformat:2 }}</td>
+        <td>₹{{ item.cgst_amount|floatformat:2 }}</td>
+        <td>₹{{ item.sgst_amount|floatformat:2 }}</td>
+        <td>₹{{ item.total|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Total -->
+  <h3>Total Amount: ₹{{ invoice.total_amount|floatformat:2 }}</h3>
+  <hr>
+
+  <!-- Terms -->
+  {% if invoice.quotation and invoice.quotation.terms %}
+    <h3>Terms & Conditions</h3>
+    <p>{{ invoice.quotation.terms.content }}</p>
+  {% endif %}
+
+  <!-- Print Button -->
+  <button onclick="window.print()" class="btn">
+    <i class="fa fa-print"></i> Print Invoice
+  </button>
+</div>
+{% endblock %}

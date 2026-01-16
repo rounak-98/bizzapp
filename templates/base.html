@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BizApp Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">ROUNAK ENGINEERING</div>
+        <!-- Mobile toggle button -->
+        <span class="nav-toggle" aria-label="Toggle navigation"><i class="fa fa-bars"></i></span>
+        <ul class="nav-links">
+            <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fa fa-home"></i> Dashboard</a></li>
+            <li><a href="{% url 'customer_list' %}" class="{% if request.resolver_match.url_name == 'customer_list' %}active{% endif %}">
+                <i class="fa fa-users"></i> Customers</a></li>
+            <li><a href="{% url 'item_list' %}" class="{% if request.resolver_match.url_name == 'item_list' %}active{% endif %}">
+                <i class="fa fa-box"></i> Items</a></li>
+            <li><a href="{% url 'quotation_list' %}" class="{% if request.resolver_match.url_name == 'quotation_list' %}active{% endif %}">
+                <i class="fa fa-file-alt"></i> Quotations</a></li>
+            <li><a href="{% url 'invoice_list' %}" class="{% if request.resolver_match.url_name == 'invoice_list' %}active{% endif %}">
+                <i class="fa fa-file-invoice"></i> Invoices</a></li>
+            <li><a href="{% url 'term_list' %}" class="{% if request.resolver_match.url_name == 'term_list' %}active{% endif %}">
+                <i class="fa fa-file-contract"></i> Terms</a></li>
+            <li><a href="{% url 'revenue' %}" class="{% if request.resolver_match.url_name == 'revenue' %}active{% endif %}">
+                <i class="fa fa-chart-line"></i> Revenue</a></li>
+            <!-- Optional Logout -->
+           
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}
+        <!-- Child templates inject their content here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 BizApp Solutions. All rights reserved.</p>
+    </footer>
+
+    <!-- Script for mobile nav toggle -->
+    <script>
+      const toggle = document.querySelector('.nav-toggle');
+      const navLinks = document.querySelector('.nav-links');
+      toggle.addEventListener('click', () => {
+        navLinks.classList.toggle('show');
+      });
+    </script>
+</body>
+</html>

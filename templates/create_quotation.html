@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Create Quotation</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <h3>Items</h3>
+    {{ formset.management_form }}
+    <div id="items-wrapper">
+      {% for form in formset %}
+        <div class="item-row">{{ form.as_p }}</div>
+      {% endfor %}
+    </div>
+
+    <button type="button" id="add-item-btn" class="btn" style="margin-top:0.5rem;">+ Add Item</button>
+
+    <script>
+      (function(){
+        const addBtn = document.getElementById('add-item-btn');
+        const itemsWrapper = document.getElementById('items-wrapper');
+        const totalFormsInput = document.querySelector('[name="' + '{{ formset.prefix }}-TOTAL_FORMS' + '"]');
+        const emptyFormHtml = `{{ formset.empty_form.as_p|escapejs }}`;
+
+        function updateIndex(html, index){
+          return html.replace(/__prefix__/g, index);
+        }
+
+        addBtn.addEventListener('click', function(){
+          let total = parseInt(totalFormsInput.value, 10);
+          const newHtml = updateIndex(emptyFormHtml, total);
+          const container = document.createElement('div');
+          container.className = 'item-row';
+          container.innerHTML = newHtml;
+          itemsWrapper.appendChild(container);
+          totalFormsInput.value = total + 1;
+        });
+      })();
+    </script>
+
+    <button type="submit" class="btn">
+      <i class="fa fa-file-alt"></i> Save Quotation
+    </button>
+  </form>
+</div>
+{% endblock %}
