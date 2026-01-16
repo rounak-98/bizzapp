@@ -77,3 +77,6 @@ DATABASES = {
 #& .venv\Scripts\activate
 # python manage.py runserver
 #.\.venv\Scripts\python.exe manage.py runserver
+'''git add .
+git commit -m "Describe your change"
+git push'''
