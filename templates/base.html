@@ -8,15 +8,6 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
-    <script>
-        // Prevent theme flicker on page load
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.documentElement.classList.add('light-mode');
-            }
-        })();
-    </script>
 </head>
 <body>
     <!-- Navbar -->
@@ -40,11 +31,6 @@
                 <i class="fa fa-building"></i> Company</a></li>
             <li><a href="{% url 'create_quotation' %}" class="btn-nav">
                 <i class="fa fa-plus"></i> New Quote</a></li>
-            <li>
-                <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Dark / Light Mode" type="button">
-                    <i class="fa-solid fa-moon" id="theme-icon"></i>
-                </button>
-            </li>
         </ul>
     </nav>
 
@@ -65,32 +51,6 @@
       if (toggle) {
         toggle.addEventListener('click', () => {
           navLinks.classList.toggle('show');
-        });
-      }
-
-      // Theme Switcher Logic (Light / Dark Mode)
-      const themeBtn = document.getElementById('theme-toggle');
-      const themeIcon = document.getElementById('theme-icon');
-
-      function updateThemeUI() {
-        const isLight = document.body.classList.contains('light-mode') || document.documentElement.classList.contains('light-mode');
-        if (isLight) {
-          document.body.classList.add('light-mode');
-          if (themeIcon) themeIcon.className = 'fa-solid fa-sun';
-        } else {
-          document.body.classList.remove('light-mode');
-          if (themeIcon) themeIcon.className = 'fa-solid fa-moon';
-        }
-      }
-
-      updateThemeUI();
-
-      if (themeBtn) {
-        themeBtn.addEventListener('click', () => {
-          const isLightNow = document.body.classList.toggle('light-mode');
-          document.documentElement.classList.toggle('light-mode', isLightNow);
-          localStorage.setItem('theme', isLightNow ? 'light' : 'dark');
-          updateThemeUI();
         });
       }
     </script>
