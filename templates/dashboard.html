@@ -2,6 +2,7 @@
 {% block title %}Dashboard - Online Quotation Maker{% endblock %}
 
 {% block content %}
+<!-- Desktop Page Header (Laptop view) -->
 <div class="page-header">
     <div>
         <h2><i class="fa fa-gauge-high"></i> Dashboard Overview</h2>
@@ -14,7 +15,7 @@
     </div>
 </div>
 
-<!-- Metrics Cards -->
+<!-- Desktop Metrics Cards -->
 <div class="metrics-grid">
     <div class="metric-card">
         <div class="title">Total Quotations</div>
@@ -43,8 +44,8 @@
     </div>
 </div>
 
-<!-- Quick Action Cards Grid -->
-<h3 style="color: #38bdf8; margin-bottom: 1rem;"><i class="fa fa-bolt"></i> Quick Actions</h3>
+<!-- Desktop Quick Action Cards Grid -->
+<h3 class="desktop-only-heading" style="color: #38bdf8; margin-bottom: 1rem;"><i class="fa fa-bolt"></i> Quick Actions</h3>
 <div class="button-grid">
     <a href="{% url 'create_quotation' %}" class="btn-card">
         <i class="fa fa-file-signature" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: #38bdf8;"></i>
@@ -72,8 +73,70 @@
     </a>
 </div>
 
+<!-- Mobile Specific App Dashboard (Exact QuotationMaker.app layout for mobile) -->
+<div class="mobile-dashboard-app">
+    <!-- Top Category Strip -->
+    <div class="mobile-cat-row">
+        <a href="{% url 'company_info' %}" class="mobile-cat-item">
+            <div class="cat-icon-box"><i class="fa fa-building"></i></div>
+            <span>BUSINESS</span>
+        </a>
+        <a href="{% url 'customer_list' %}" class="mobile-cat-item">
+            <div class="cat-icon-box"><i class="fa fa-user"></i></div>
+            <span>CUSTOMER</span>
+        </a>
+        <a href="{% url 'item_list' %}" class="mobile-cat-item">
+            <div class="cat-icon-box"><i class="fa fa-box-open"></i></div>
+            <span>PRODUCT</span>
+        </a>
+        <a href="{% url 'term_list' %}" class="mobile-cat-item">
+            <div class="cat-icon-box"><i class="fa fa-file-contract"></i></div>
+            <span>TERMS</span>
+        </a>
+    </div>
+
+    <!-- 2-Column Mobile App Action Grid -->
+    <div class="mobile-action-grid">
+        <a href="{% url 'create_quotation' %}" class="mobile-app-card">
+            <div class="app-card-icon"><i class="fa fa-file-signature"></i></div>
+            <div class="app-card-title">Make Quotation</div>
+            <div class="app-card-sub">Create a new quotation</div>
+        </a>
+
+        <a href="{% url 'quotation_list' %}" class="mobile-app-card">
+            <div class="app-card-icon"><i class="fa fa-list-check"></i></div>
+            <div class="app-card-title">Quotation List</div>
+            <div class="app-card-sub">Manage all quotations</div>
+        </a>
+
+        <a href="{% url 'create_invoice' %}" class="mobile-app-card">
+            <div class="app-card-icon"><i class="fa fa-receipt"></i></div>
+            <div class="app-card-title">Make Invoice</div>
+            <div class="app-card-sub">Create a new invoice</div>
+        </a>
+
+        <a href="{% url 'invoice_list' %}" class="mobile-app-card">
+            <div class="app-card-icon"><i class="fa fa-file-invoice"></i></div>
+            <div class="app-card-title">Invoice List</div>
+            <div class="app-card-sub">Manage all invoices</div>
+        </a>
+
+        <a href="{% url 'customer_list' %}" class="mobile-app-card">
+            <div class="app-card-icon"><i class="fa fa-users"></i></div>
+            <div class="app-card-title">Customers</div>
+            <div class="app-card-sub">Ledger & statements</div>
+        </a>
+
+        <a href="{% url 'revenue' %}" class="mobile-app-card">
+            <div class="app-card-icon"><i class="fa fa-chart-line"></i></div>
+            <div class="app-card-title">Revenue & Reports</div>
+            <div class="app-card-sub">Track revenue</div>
+        </a>
+    </div>
+</div>
+
 <!-- Recent Quotations Section -->
-<div style="margin-top: 2.5rem;">
+<div style="margin-top: 2rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h3 style="color: #38bdf8;"><i class="fa fa-clock-rotate-left"></i> Recent Quotations</h3>
         <a href="{% url 'quotation_list' %}" style="color: #38bdf8; text-decoration: none; font-size: 0.9rem; font-weight: 600;">View All →</a>
