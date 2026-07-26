@@ -733,6 +733,15 @@ select option {
     padding: 0.85rem 1.25rem;
   }
 
+  .nav-toggle {
+    display: block !important;
+    color: #38bdf8 !important;
+    font-size: 1.5rem !important;
+    cursor: pointer !important;
+    padding: 0.4rem !important;
+    z-index: 1001 !important;
+  }
+
   .nav-links {
     display: none;
     flex-direction: column;
