@@ -1,1 +1,1 @@
-web: gunicorn bizapp.wsgi
+web: gunicorn bizapp.wsgi:application
