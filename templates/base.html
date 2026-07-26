@@ -61,11 +61,22 @@
     </footer>
 
     <script>
-      const toggle = document.querySelector('.nav-toggle');
-      const navLinks = document.querySelector('.nav-links');
-      if (toggle) {
-        toggle.addEventListener('click', () => {
+      if (toggle && navLinks) {
+        toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
           navLinks.classList.toggle('show');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (navLinks.classList.contains('show') && !navLinks.contains(e.target) && !toggle.contains(e.target)) {
+            navLinks.classList.remove('show');
+          }
+        });
+
+        navLinks.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', () => {
+            navLinks.classList.remove('show');
+          });
         });
       }
 
