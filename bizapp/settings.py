@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -64,9 +65,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Database: Flexible for Localhost MySQL or Cloud Deployment
-DB_ENGINE = os.environ.get("DB_ENGINE", "django.db.backends.mysql")
-if DB_ENGINE == "sqlite3":
+# Database: Flexible for Localhost MySQL or Render Cloud Deployment
+DB_ENGINE = os.environ.get("DB_ENGINE", "")
+IS_RENDER = os.environ.get("RENDER") or os.environ.get("RENDER_SERVICE_ID")
+
+if DB_ENGINE == "sqlite3" or "test" in sys.argv or (IS_RENDER and not os.environ.get("DB_HOST")):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
