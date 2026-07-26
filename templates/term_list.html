@@ -1,30 +1,52 @@
 {% extends 'base.html' %}
+{% block title %}Terms & Conditions Presets{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <h2>Terms</h2>
+<div class="page-header">
+    <div>
+        <h2><i class="fa fa-file-contract"></i> Terms & Conditions Presets</h2>
+        <p style="color: #94a3b8; margin-top: 0.25rem;">Create, edit, and manage reusable contract & payment terms presets.</p>
+    </div>
+    <div>
+        <a href="{% url 'create_term' %}" class="btn-primary">
+            <i class="fa fa-plus"></i> Add New Terms Preset
+        </a>
+    </div>
+</div>
 
-  <!-- Add Term button -->
-  <a href="{% url 'create_term' %}" class="btn" style="margin-bottom:1rem;">
-    <i class="fa fa-file-contract"></i> Add Term
-  </a>
-
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for term in terms %}
-        <tr>
-          <td>{{ term.title }}</td>
-          <td>{{ term.description }}</td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="2">No terms found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="table-responsive">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th style="width: 25%;">Preset Title</th>
+                <th style="width: 60%;">Terms & Conditions Text</th>
+                <th style="width: 15%;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for term in terms %}
+            <tr>
+                <td><strong>{{ term.title }}</strong></td>
+                <td style="line-height: 1.4; color: #cbd5e1;">{{ term.content|linebreaksbr }}</td>
+                <td>
+                    <div style="display: flex; gap: 0.4rem;">
+                        <a href="{% url 'edit_term' term.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                            <i class="fa fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'delete_term' term.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: #f87171;">
+                            <i class="fa fa-trash"></i> Delete
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                    No terms presets created yet. Click "Add New Terms Preset" above to create one.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

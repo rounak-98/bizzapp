@@ -1,38 +1,91 @@
 {% extends 'base.html' %}
+{% block title %}Invoices Directory{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <h2>Invoice List</h2>
+<div class="page-header">
+    <div>
+        <h2><i class="fa fa-receipt"></i> Tax Invoices Directory</h2>
+        <p style="color: #94a3b8; margin-top: 0.25rem;">Manage finalized billing, invoices, and payment statuses.</p>
+    </div>
+    <div>
+        <a href="{% url 'create_invoice' %}" class="btn-primary">
+            <i class="fa fa-plus-circle"></i> Create New Invoice
+        </a>
+    </div>
+</div>
 
-  <!-- Add Invoice button -->
-  <a href="{% url 'create_invoice' %}" class="btn" style="margin-bottom:1rem;">
-    <i class="fa fa-plus-circle"></i> Add Invoice
-  </a>
+<!-- Search & Filter Controls -->
+<form method="get" class="search-filter-bar" style="margin-bottom: 1.5rem;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search invoice # or customer..." class="search-input">
+    
+    <select name="status" onchange="this.form.submit()" style="padding: 0.6rem 1rem !important; border-radius: 8px !important;">
+        <option value="">All Statuses</option>
+        {% for val, label in status_choices %}
+        <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
 
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Quotation</th>
-        <th>Date</th>
-        <th>Total Amount</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for invoice in invoices %}
-        <tr>
-          <td>{{ invoice.quotation }}</td>
-          <td>{{ invoice.issued_date }}</td>
-          <td>₹{{ invoice.total_amount|floatformat:2 }}</td>
-          <td>
-            <a href="{% url 'invoice_detail' invoice.id %}">View</a>
-            &nbsp;|&nbsp;
-            <a href="{% url 'invoice_detail' invoice.id %}#print">Print</a>
-          </td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="4">No invoices found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <button type="submit" class="btn-secondary">
+        <i class="fa fa-search"></i> Search
+    </button>
+
+    {% if query or status_filter %}
+    <a href="{% url 'invoice_list' %}" class="btn-secondary" style="color: #f87171;">
+        <i class="fa fa-times"></i> Clear Filter
+    </a>
+    {% endif %}
+</form>
+
+<div class="table-responsive">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Linked Quotation</th>
+                <th>Customer</th>
+                <th>Issued Date</th>
+                <th>Status</th>
+                <th>Total Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td><strong>{{ invoice.invoice_number|default:invoice.id }}</strong></td>
+                <td>
+                    {% if invoice.quotation %}
+                    <a href="{% url 'quotation_detail' invoice.quotation.id %}" style="color: #38bdf8; text-decoration: none;">
+                        {{ invoice.quotation.quote_number|default:invoice.quotation.id }}
+                    </a>
+                    {% else %}
+                    <span style="color: #94a3b8;">Direct</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if invoice.quotation and invoice.quotation.customer %}
+                    {{ invoice.quotation.customer.name }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>{{ invoice.issued_date|date:"Y-m-d" }}</td>
+                <td><span class="badge badge-{{ invoice.status|slugify }}">{{ invoice.status }}</span></td>
+                <td><strong>₹{{ invoice.total_amount|floatformat:2 }}</strong></td>
+                <td>
+                    <a href="{% url 'invoice_detail' invoice.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                        <i class="fa fa-eye"></i> View / Print
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                    No invoices found matching your criteria.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

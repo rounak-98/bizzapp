@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Delete Term Preset{% endblock %}
+
+{% block content %}
+<div class="form-container" style="max-width: 500px; margin: 3rem auto; text-align: center;">
+    <div style="font-size: 3rem; color: #f87171; margin-bottom: 1rem;">
+        <i class="fa fa-exclamation-triangle"></i>
+    </div>
+    <h2>Confirm Delete Preset</h2>
+    <p style="color: #cbd5e1; margin-bottom: 1.5rem;">
+        Are you sure you want to delete the terms preset <strong>"{{ term.title }}"</strong>?
+    </p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="{% url 'term_list' %}" class="btn-secondary">Cancel</a>
+            <button type="submit" class="btn-primary" style="background: #ef4444;">
+                <i class="fa fa-trash"></i> Yes, Delete Term
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

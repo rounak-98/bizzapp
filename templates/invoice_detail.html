@@ -1,65 +1,341 @@
 {% extends 'base.html' %}
+{% block title %}Invoice {{ invoice.invoice_number|default:invoice.id }}{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <!-- Company Info -->
-  <h2>{{ company.name }}</h2>
-  <h3 style="margin-top:0.25rem;">Invoice{% if invoice.id %} #{{ invoice.id }}{% endif %}</h3>
-  <p><strong>GST No:</strong> {{ company.gst_no }}</p>
-  <p><strong>Email:</strong> {{ company.email }}</p>
-  <p><strong>Account:</strong> {{ company.account_details }}</p>
-  <hr>
+<!-- Screen-only Action Bar -->
+<div class="doc-toolbar no-print">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <a href="{% url 'invoice_list' %}" class="btn-secondary">
+            <i class="fa fa-arrow-left"></i> Back to Invoices
+        </a>
+        <span class="badge badge-{{ invoice.status|slugify }}">{{ invoice.status }}</span>
 
-  <!-- Customer Info -->
-  <h3>Customer Details</h3>
-  {% if invoice.quotation and invoice.quotation.customer %}
-    <p><strong>Name:</strong> {{ invoice.quotation.customer.name }}</p>
-    <p><strong>Email:</strong> {{ invoice.quotation.customer.email }}</p>
-    <p><strong>Phone:</strong> {{ invoice.quotation.customer.phone }}</p>
-  {% else %}
-    <p><em>No customer linked to this invoice.</em></p>
-  {% endif %}
-  <hr>
+        <form method="post" action="{% url 'update_invoice_status' invoice.id %}" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+            {% csrf_token %}
+            <select name="status" onchange="this.form.submit()" style="padding: 0.35rem 0.6rem !important; font-size: 0.85rem !important;">
+                {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if invoice.status == val %}selected{% endif %}>Set Status: {{ label }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
 
-  <!-- Items -->
-  <h3>Products</h3>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Qty</th>
-        <th>Price</th>
-        <th>CGST</th>
-        <th>SGST</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.item.name }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>₹{{ item.item.price|floatformat:2 }}</td>
-        <td>₹{{ item.cgst_amount|floatformat:2 }}</td>
-        <td>₹{{ item.sgst_amount|floatformat:2 }}</td>
-        <td>₹{{ item.total|floatformat:2 }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <!-- WhatsApp Share Button -->
+        <button onclick="shareWhatsApp('{{ invoice.invoice_number|default:invoice.id }}', '{{ invoice.total_amount|floatformat:2 }}', '{{ invoice.balance_due|floatformat:2 }}', '{% url 'invoice_pdf' invoice.id %}')" class="btn-success">
+            <i class="fa-brands fa-whatsapp"></i> Share on WhatsApp
+        </button>
 
-  <!-- Total -->
-  <h3>Total Amount: ₹{{ invoice.total_amount|floatformat:2 }}</h3>
-  <hr>
+        <!-- Record Payment Trigger Button -->
+        <button onclick="document.getElementById('payment-modal').style.display='block'" class="btn-primary" style="background: #10b981;">
+            <i class="fa fa-money-bill-wave"></i> Record Payment
+        </button>
 
-  <!-- Terms -->
-  {% if invoice.quotation and invoice.quotation.terms %}
-    <h3>Terms & Conditions</h3>
-    <p>{{ invoice.quotation.terms.content }}</p>
-  {% endif %}
-
-  <!-- Print Button -->
-  <button onclick="window.print()" class="btn">
-    <i class="fa fa-print"></i> Print Invoice
-  </button>
+        <button onclick="window.print()" class="btn-primary">
+            <i class="fa fa-print"></i> Print / Download PDF
+        </button>
+    </div>
 </div>
+
+<!-- Modal Dialog for Recording Payments -->
+<div id="payment-modal" class="no-print" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #1e293b; color: #fff; max-width: 480px; margin: 5rem auto; padding: 1.5rem; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0;"><i class="fa fa-receipt"></i> Record Payment Receipt</h3>
+            <button onclick="document.getElementById('payment-modal').style.display='none'" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <form method="post" action="{% url 'add_payment_receipt' invoice.id %}">
+            {% csrf_token %}
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.2rem;">Payment Date</label>
+                {{ payment_form.payment_date }}
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.2rem;">Amount Paid (₹)</label>
+                <input type="number" name="amount_paid" step="0.01" value="{{ invoice.balance_due }}" max="{{ invoice.balance_due }}" required style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: #fff;">
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.2rem;">Payment Mode</label>
+                {{ payment_form.payment_mode }}
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.2rem;">Reference / UTR No</label>
+                {{ payment_form.reference_no }}
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.2rem;">Notes</label>
+                {{ payment_form.notes }}
+            </div>
+            <div style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button type="button" onclick="document.getElementById('payment-modal').style.display='none'" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-primary">Save Receipt</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- A4 Document Sheet matching exact PDF template -->
+<div class="document-wrapper" style="background: #ffffff; color: #000000; padding: 2.5rem; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 850px; margin: 1.5rem auto;">
+    
+    <!-- Top Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+        <!-- Logo -->
+        <div style="width: 140px;">
+            {% if company and company.logo %}
+            <img src="{{ company.logo.url }}" alt="Logo" style="max-width: 100%; height: auto; max-height: 80px; object-fit: contain;">
+            {% elif company and company.logo_url %}
+            <img src="{{ company.logo_url }}" alt="Logo" style="max-width: 100%; height: auto; max-height: 80px; object-fit: contain;">
+            {% endif %}
+        </div>
+        
+        <!-- Company Info Center -->
+        <div style="text-align: center; flex-grow: 1; padding: 0 1rem; line-height: 1.35; font-size: 0.9rem;">
+            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem;">{{ company.name|default:"Company Name" }}</div>
+            {% if company.owner_name %}<div style="font-weight: 600; color: #334155;">{{ company.owner_name }}</div>{% endif %}
+            {% if company.address %}<div>{{ company.address }}</div>{% endif %}
+            <div>
+                {% if company.phone %}📱 {{ company.phone }} {% endif %}
+                {% if company.email %}✉️ {{ company.email }}{% endif %}
+            </div>
+            {% if company.gst_no %}
+            <div style="font-weight: 700; color: #0f172a; margin-top: 0.2rem;">GSTIN: {{ company.gst_no }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- Document Title Right -->
+        <div style="text-align: right; font-size: 1.6rem; font-weight: 900; color: #0f172a; width: 150px; line-height: 1.1;">
+            TAX INVOICE
+        </div>
+    </div>
+
+    <!-- Bill To & Document Meta Section -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; font-size: 0.9rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <div style="max-width: 60%; line-height: 1.4;">
+            <div style="font-size: 0.85rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 0.2rem;">BILL TO</div>
+            {% if invoice.quotation and invoice.quotation.customer %}
+                <div style="font-size: 1.05rem; font-weight: 800; color: #000;">{{ invoice.quotation.customer.name }}</div>
+                {% if invoice.quotation.customer.address %}<div>{{ invoice.quotation.customer.address }}</div>{% endif %}
+                {% if invoice.quotation.customer.gstin %}<div style="font-weight: 700; color: #0f172a;">GSTIN: {{ invoice.quotation.customer.gstin }}</div>{% endif %}
+                {% if invoice.quotation.customer.email %}<div>Email: {{ invoice.quotation.customer.email }}</div>{% endif %}
+            {% else %}
+                <div style="color: #64748b;">Direct Invoice Customer</div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <table style="border-collapse: collapse; margin-left: auto; font-size: 0.95rem;">
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">Invoice#</td>
+                    <td style="text-align: right; font-weight: 600; padding: 0.15rem 0.5rem;">{{ invoice.invoice_number|default:invoice.id }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">Invoice Date:</td>
+                    <td style="text-align: right; padding: 0.15rem 0.5rem;">{{ invoice.issued_date|date:"d/m/Y" }}</td>
+                </tr>
+                {% if invoice.po_number %}
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">PO#</td>
+                    <td style="text-align: right; padding: 0.15rem 0.5rem;">{{ invoice.po_number }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.88rem;">
+        <thead>
+            <tr style="background: #f1f5f9; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800; text-transform: uppercase; width: 4%;">#</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800; text-transform: uppercase;">DESCRIPTION</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: center; font-weight: 800; text-transform: uppercase; width: 8%;">HSN</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: center; font-weight: 800; text-transform: uppercase; width: 8%;">QTY</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 14%;">PRICE</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 15%;">TAXABLE AMOUNT</th>
+                {% if invoice.effective_tax_type == 'IGST' %}
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 14%;">IGST</th>
+                {% else %}
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 12%;">CGST</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 12%;">SGST</th>
+                {% endif %}
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 15%;">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr style="border-bottom: 1px solid #e2e8f0; vertical-align: top;">
+                <td style="padding: 0.75rem 0.4rem; text-align: left;">{{ forloop.counter }}</td>
+                <td style="padding: 0.75rem 0.4rem; text-align: left;">
+                    <div style="font-weight: 800; color: #000;">{{ item.item.name }}</div>
+                    {% if item.item.description %}
+                    <div style="font-size: 0.78rem; color: #64748b; margin-top: 0.15rem;">{{ item.item.description }}</div>
+                    {% endif %}
+                </td>
+                <td style="padding: 0.75rem 0.4rem; text-align: center;">{{ item.item.hsn_code|default:"-" }}</td>
+                <td style="padding: 0.75rem 0.4rem; text-align: center;">{{ item.quantity }}</td>
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">₹{{ item.effective_price|default:item.item.price|floatformat:2 }}</td>
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">₹{{ item.total|floatformat:2 }}</td>
+
+                {% if invoice.effective_tax_type == 'IGST' %}
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">
+                    {% if item.gst_percent and item.gst_percent > 0 %}
+                    <div>₹{{ item.igst_amount|floatformat:2 }}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">{{ item.gst_percent|floatformat:2 }}%</div>
+                    {% else %}-{% endif %}
+                </td>
+                {% else %}
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">
+                    {% if item.gst_percent and item.gst_percent > 0 %}
+                    <div>₹{{ item.cgst_amount|floatformat:2 }}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">{{ item.cgst_percent|floatformat:2 }}%</div>
+                    {% else %}-{% endif %}
+                </td>
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">
+                    {% if item.gst_percent and item.gst_percent > 0 %}
+                    <div>₹{{ item.sgst_amount|floatformat:2 }}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">{{ item.sgst_percent|floatformat:2 }}%</div>
+                    {% else %}-{% endif %}
+                </td>
+                {% endif %}
+
+                <td style="padding: 0.75rem 0.4rem; text-align: right; font-weight: 700;">
+                    ₹{{ item.total|add:item.cgst_amount|add:item.sgst_amount|floatformat:2 }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 1.5rem; color: #94a3b8;">No line items found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Summary Row (Words on Left, Totals on Right) -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div style="width: 55%; font-size: 0.88rem;">
+            <div style="font-weight: 800; font-size: 0.8rem; text-transform: uppercase; color: #0f172a; margin-bottom: 0.2rem;">AMOUNT IN WORDS:</div>
+            <div style="font-weight: 600; color: #1e293b; font-size: 0.95rem;">{{ invoice.total_in_words }}/-</div>
+        </div>
+
+        <div style="width: 40%;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <tr>
+                    <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">TAXABLE AMOUNT</td>
+                    <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 600;">₹{{ invoice.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% if invoice.effective_gst_percent and invoice.effective_gst_percent > 0 %}
+                    {% if invoice.effective_tax_type == 'IGST' %}
+                    <tr>
+                        <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">IGST</td>
+                        <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 600;">₹{{ invoice.igst|floatformat:2 }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">CGST</td>
+                        <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 600;">₹{{ invoice.cgst|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">SGST</td>
+                        <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 600;">₹{{ invoice.sgst|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                {% endif %}
+                <tr style="background: #f1f5f9; border-top: 1px solid #cbd5e1;">
+                    <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">GRAND TOTAL</td>
+                    <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 800; color: #0f172a;">₹{{ invoice.total_amount|floatformat:2 }}</td>
+                </tr>
+                {% if invoice.paid_amount > 0 %}
+                <tr>
+                    <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #16a34a; text-transform: uppercase;">PAID AMOUNT</td>
+                    <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 800; color: #16a34a;">₹{{ invoice.paid_amount|floatformat:2 }}</td>
+                </tr>
+                <tr style="background: #fef2f2; border-top: 2px solid #dc2626; border-bottom: 2px solid #dc2626;">
+                    <td style="padding: 0.5rem; font-size: 1.05rem; font-weight: 900; color: #dc2626; text-transform: uppercase;">BALANCE DUE</td>
+                    <td style="padding: 0.5rem; text-align: right; font-size: 1.05rem; font-weight: 900; color: #dc2626;">₹{{ invoice.balance_due|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <!-- Payments Receipts History Table -->
+    {% if payments %}
+    <div style="margin-bottom: 1.5rem;">
+        <h4 style="font-size: 0.85rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 0.4rem;">Payment History & Receipts</h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+            <thead>
+                <tr style="background: #f8fafc; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                    <th style="padding: 0.4rem; text-align: left;">DATE</th>
+                    <th style="padding: 0.4rem; text-align: left;">MODE</th>
+                    <th style="padding: 0.4rem; text-align: left;">REF / UTR NO</th>
+                    <th style="padding: 0.4rem; text-align: right;">AMOUNT PAID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 0.4rem;">{{ p.payment_date|date:"d/m/Y" }}</td>
+                    <td style="padding: 0.4rem;">{{ p.payment_mode }}</td>
+                    <td style="padding: 0.4rem;">{{ p.reference_no|default:"-" }}</td>
+                    <td style="padding: 0.4rem; text-align: right; font-weight: 700; color: #16a34a;">₹{{ p.amount_paid|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Footer Instructions, UPI QR Code & Signature -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+        <div style="font-size: 0.85rem; line-height: 1.4; max-width: 55%; display: flex; gap: 1rem;">
+            <div>
+                {% if company and company.bank_name %}
+                <div style="font-weight: 800; text-transform: uppercase; margin-bottom: 0.25rem; color: #0f172a;">PAYMENT INSTRUCTIONS</div>
+                <div>{{ company.bank_name }}</div>
+                {% if company.account_no %}<div>A/c No: {{ company.account_no }}</div>{% endif %}
+                {% if company.ifsc_code %}<div>IFSC Code: {{ company.ifsc_code }}</div>{% endif %}
+                {% elif company.account_details %}
+                <div style="font-weight: 800; text-transform: uppercase; margin-bottom: 0.25rem; color: #0f172a;">PAYMENT INSTRUCTIONS</div>
+                <div>{{ company.account_details|linebreaksbr }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Scannable UPI QR Code -->
+            {% if upi_qr_url %}
+            <div style="text-align: center; font-size: 0.75rem;">
+                <img src="{{ upi_qr_url }}" alt="UPI QR Code" style="width: 100px; height: 100px; display: block; margin: 0 auto;">
+                <span style="font-weight: 700; color: #0f172a;">Scan to Pay via UPI</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="text-align: right;">
+            {% if company and company.signature %}
+            <img src="{{ company.signature.url }}" alt="Digital Signature" style="max-height: 60px; max-width: 160px; object-fit: contain; display: block; margin-left: auto; margin-bottom: 0.25rem;">
+            {% endif %}
+            <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a; text-transform: uppercase;">For, {{ company.name|default:"Company" }}</div>
+            <div style="margin-top: 0.5rem; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: #334155;">
+                {{ company.signatory_title|default:"AUTHORIZED SIGNATURE" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function shareWhatsApp(docNo, totalAmt, balDue, pdfPath) {
+    const a = document.createElement('a');
+    a.href = pdfPath;
+    a.download = `Invoice_${docNo}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    const text = `Hello! Here is Tax Invoice ${docNo} for Amount ₹${totalAmt} (Balance Due: ₹${balDue}).`;
+
+    alert(`📥 Invoice_${docNo}.pdf has been saved to your Downloads folder!\n\nWhatsApp Web/App will open now. Pick your contact and click 📎 (Attach -> Document) to send the PDF file!`);
+
+    window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), "_blank");
+}
+</script>
 {% endblock %}

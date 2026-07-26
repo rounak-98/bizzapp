@@ -1,41 +1,87 @@
 {% extends 'base.html' %}
+{% block title %}Quotations List{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <h2>Quotation List</h2>
+<div class="page-header">
+    <div>
+        <h2><i class="fa fa-file-lines"></i> Quotations Directory</h2>
+        <p style="color: #94a3b8; margin-top: 0.25rem;">Manage proposals, quotes, and client estimates.</p>
+    </div>
+    <div>
+        <a href="{% url 'create_quotation' %}" class="btn-primary">
+            <i class="fa fa-plus-circle"></i> New Quotation
+        </a>
+    </div>
+</div>
 
-  <!-- Add Quotation button -->
-  <a href="{% url 'create_quotation' %}" class="btn" style="margin-bottom:1rem;">
-    <i class="fa fa-file-alt"></i> Create New Quotation
-  </a>
+<!-- Search & Filter Controls -->
+<form method="get" class="search-filter-bar" style="margin-bottom: 1.5rem;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search quote # or customer..." class="search-input">
+    
+    <select name="status" onchange="this.form.submit()" style="padding: 0.6rem 1rem !important; border-radius: 8px !important;">
+        <option value="">All Statuses</option>
+        {% for val, label in status_choices %}
+        <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
 
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Customer</th>
-        <th>Date</th>
-        <th>Total</th>
-        <th>Actions</th>
+    <button type="submit" class="btn-secondary">
+        <i class="fa fa-search"></i> Search
+    </button>
 
-      </tr>
-    </thead>
-    <tbody>
-      {% for quotation in quotations %}
-        <tr>
-          <td>{{ quotation.customer }}</td>
-          <td>{{ quotation.date }}</td>
-          <td>₹{{ quotation.total_with_tax|floatformat:2 }}</td>
-          <td>
-            <a href="{% url 'quotation_detail' quotation.id %}">View</a>
-            &nbsp;|&nbsp;
-            <a href="{% url 'edit_quotation' quotation.id %}">Edit</a>
-            &nbsp;|&nbsp;
-            <a href="{% url 'performa_create' quotation.id %}">Performa</a>
-          </td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="3">No quotations found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    {% if query or status_filter %}
+    <a href="{% url 'quotation_list' %}" class="btn-secondary" style="color: #f87171;">
+        <i class="fa fa-times"></i> Clear Filter
+    </a>
+    {% endif %}
+</form>
+
+<div class="table-responsive">
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Quote Ref #</th>
+                <th>Customer</th>
+                <th>Created Date</th>
+                <th>Valid Until</th>
+                <th>Status</th>
+                <th>Total Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for quotation in quotations %}
+            <tr>
+                <td><strong>{{ quotation.quote_number|default:quotation.id }}</strong></td>
+                <td>{{ quotation.customer.name }}</td>
+                <td>{{ quotation.date|date:"Y-m-d" }}</td>
+                <td>{% if quotation.valid_until %}{{ quotation.valid_until|date:"Y-m-d" }}{% else %}-{% endif %}</td>
+                <td><span class="badge badge-{{ quotation.status|lower }}">{{ quotation.status }}</span></td>
+                <td><strong>₹{{ quotation.total_amount|floatformat:2 }}</strong></td>
+                <td>
+                    <div style="display: flex; gap: 0.4rem;">
+                        <a href="{% url 'quotation_detail' quotation.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                            <i class="fa fa-eye"></i> View
+                        </a>
+                        <a href="{% url 'edit_quotation' quotation.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                            <i class="fa fa-edit"></i> Edit
+                        </a>
+                        {% if quotation.status != 'Converted' %}
+                        <a href="{% url 'convert_quotation' quotation.id %}" class="btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" title="Convert to Invoice">
+                            <i class="fa fa-receipt"></i> Convert
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                    No quotations found matching your search or filter criteria.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

@@ -1,71 +1,277 @@
 {% extends 'base.html' %}
+{% block title %}Quotation {{ quotation.quote_number|default:quotation.id }} - {{ quotation.customer.name }}{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <!-- Company Info -->
-  <h2>{{ company.name }}</h2>
-  <h3 style="margin-top:0.25rem;">Quotation{% if quotation.id %} #{{ quotation.id }}{% endif %}</h3>
-  <p><strong>GST No:</strong> {{ company.gst_no }}</p>
-  <p><strong>Email:</strong> {{ company.email }}</p>
-  <p><strong>Account:</strong> {{ company.account_details }}</p>
-  <hr>
+<!-- Screen-only Action Bar -->
+<div class="doc-toolbar no-print">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <a href="{% url 'quotation_list' %}" class="btn-secondary">
+            <i class="fa fa-arrow-left"></i> Back to Quotations
+        </a>
+        <span class="badge badge-{{ quotation.status|lower }}">{{ quotation.status }}</span>
+        
+        <form method="post" action="{% url 'update_quotation_status' quotation.id %}" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+            {% csrf_token %}
+            <select name="status" onchange="this.form.submit()" style="padding: 0.35rem 0.6rem !important; font-size: 0.85rem !important;">
+                {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if quotation.status == val %}selected{% endif %}>Set Status: {{ label }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <!-- WhatsApp Share Button -->
+        <button onclick="shareWhatsApp('{{ quotation.quote_number|default:quotation.id }}', '{{ quotation.total_amount|floatformat:2 }}', '{% url 'quotation_pdf' quotation.id %}')" class="btn-success">
+            <i class="fa-brands fa-whatsapp"></i> Share on WhatsApp
+        </button>
 
-  <!-- Customer Info -->
-  <h3>Customer Details</h3>
-  <p><strong>Name:</strong> {{ quotation.customer.name }}</p>
-  <p><strong>Email:</strong> {{ quotation.customer.email }}</p>
-  <p><strong>Phone:</strong> {{ quotation.customer.phone }}</p>
-  <hr>
-
-  <!-- Items -->
-  <h3>Products</h3>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Qty</th>
-        <th>Price</th>
-        <th>CGST</th>
-        <th>SGST</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for qi in quotation.quotationitem_set.all %}
-      <tr>
-        <td>{{ qi.item.name }}</td>
-        <td>{{ qi.quantity }}</td>
-        <td>₹{{ qi.item.price|floatformat:2 }}</td>
-        <td>₹{{ qi.cgst_amount|floatformat:2 }}</td>
-        <td>₹{{ qi.sgst_amount|floatformat:2 }}</td>
-        <td>₹{{ qi.total|floatformat:2 }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <!-- Totals -->
-  <div class="totals">
-  <h4>Subtotal: ₹{{ quotation.subtotal|floatformat:2 }}</h4>
-  {% if quotation.gst_percent and quotation.gst_percent|floatformat:2 != '0.00' %}
-    <p>GST ({{ quotation.gst_percent }}%):</p>
-    <p>&nbsp;&nbsp;CGST: ₹{{ quotation.cgst|floatformat:2 }}</p>
-    <p>&nbsp;&nbsp;SGST: ₹{{ quotation.sgst|floatformat:2 }}</p>
-  {% endif %}
-  <h3>Total Amount: ₹{{ quotation.total_with_tax|floatformat:2 }}</h3>
-  </div>
-  <hr>
-
-  <!-- Terms -->
-  {% if quotation.terms %}
-    <h3>Terms & Conditions</h3>
-    <p>{{ quotation.terms.content }}</p>
-  {% endif %}
-
-  <!-- Print Button -->
-  <button onclick="window.print()" class="btn">
-    <i class="fa fa-print"></i> Print Quotation
-  </button>
-  <a href="{% url 'performa_create' quotation.id %}" class="btn">
-    <i class="fa fa-file-invoice"></i> Performa Invoice
-  </a>
+        <a href="{% url 'edit_quotation' quotation.id %}" class="btn-secondary">
+            <i class="fa fa-edit"></i> Edit
+        </a>
+        
+        {% if quotation.status != 'Converted' %}
+        <a href="{% url 'convert_quotation' quotation.id %}" class="btn-success" onclick="return confirm('Convert this quotation to an official Tax Invoice?')">
+            <i class="fa fa-receipt"></i> Convert to Invoice
+        </a>
+        {% endif %}
+        
+        <a href="{% url 'performa_create' quotation.id %}" class="btn-secondary">
+            <i class="fa fa-file-invoice"></i> Performa
+        </a>
+        
+        <button onclick="window.print()" class="btn-primary">
+            <i class="fa fa-print"></i> Print / Download PDF
+        </button>
+    </div>
 </div>
+
+<!-- A4 Document Sheet matching exact PDF template -->
+<div class="document-wrapper" style="background: #ffffff; color: #000000; padding: 2.5rem; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 850px; margin: 1.5rem auto;">
+    
+    <!-- Top Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+        <!-- Logo -->
+        <div style="width: 140px;">
+            {% if company and company.logo %}
+            <img src="{{ company.logo.url }}" alt="Logo" style="max-width: 100%; height: auto; max-height: 80px; object-fit: contain;">
+            {% elif company and company.logo_url %}
+            <img src="{{ company.logo_url }}" alt="Logo" style="max-width: 100%; height: auto; max-height: 80px; object-fit: contain;">
+            {% endif %}
+        </div>
+        
+        <!-- Company Info Center -->
+        <div style="text-align: center; flex-grow: 1; padding: 0 1rem; line-height: 1.35; font-size: 0.9rem;">
+            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem;">{{ company.name|default:"Company Name" }}</div>
+            {% if company.owner_name %}<div style="font-weight: 600; color: #334155;">{{ company.owner_name }}</div>{% endif %}
+            {% if company.address %}<div>{{ company.address }}</div>{% endif %}
+            <div>
+                {% if company.phone %}📱 {{ company.phone }} {% endif %}
+                {% if company.email %}✉️ {{ company.email }}{% endif %}
+            </div>
+            {% if company.gst_no %}
+            <div style="font-weight: 700; color: #0f172a; margin-top: 0.2rem;">GSTIN: {{ company.gst_no }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- Document Title Right -->
+        <div style="text-align: right; font-size: 1.6rem; font-weight: 900; color: #0f172a; width: 150px; line-height: 1.1;">
+            QUOTATION
+        </div>
+    </div>
+
+    <!-- Bill To & Document Meta Section -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; font-size: 0.9rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <div style="max-width: 60%; line-height: 1.4;">
+            <div style="font-size: 0.85rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 0.2rem;">QUOTATION TO</div>
+            <div style="font-size: 1.05rem; font-weight: 800; color: #000;">{{ quotation.customer.name }}</div>
+            {% if quotation.customer.address %}<div>{{ quotation.customer.address }}</div>{% endif %}
+            {% if quotation.customer.gstin %}<div style="font-weight: 700; color: #0f172a;">GSTIN: {{ quotation.customer.gstin }}</div>{% endif %}
+            {% if quotation.customer.email %}<div>Email: {{ quotation.customer.email }}</div>{% endif %}
+        </div>
+        
+        <div>
+            <table style="border-collapse: collapse; margin-left: auto; font-size: 0.95rem;">
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">Quote#</td>
+                    <td style="text-align: right; font-weight: 600; padding: 0.15rem 0.5rem;">{{ quotation.quote_number|default:quotation.id }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">Quote Date:</td>
+                    <td style="text-align: right; padding: 0.15rem 0.5rem;">{{ quotation.date|date:"d/m/Y" }}</td>
+                </tr>
+                {% if quotation.valid_until %}
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">Valid Until:</td>
+                    <td style="text-align: right; padding: 0.15rem 0.5rem;">{{ quotation.valid_until|date:"d/m/Y" }}</td>
+                </tr>
+                {% endif %}
+                {% if quotation.po_number %}
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">PO#</td>
+                    <td style="text-align: right; padding: 0.15rem 0.5rem;">{{ quotation.po_number }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.88rem;">
+        <thead>
+            <tr style="background: #f1f5f9; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800; text-transform: uppercase; width: 4%;">#</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800; text-transform: uppercase;">DESCRIPTION</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: center; font-weight: 800; text-transform: uppercase; width: 8%;">HSN</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: center; font-weight: 800; text-transform: uppercase; width: 8%;">QTY</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 14%;">PRICE</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 15%;">TAXABLE AMOUNT</th>
+                {% if quotation.tax_type == 'IGST' %}
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 14%;">IGST</th>
+                {% else %}
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 12%;">CGST</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 12%;">SGST</th>
+                {% endif %}
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800; text-transform: uppercase; width: 15%;">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for qi in quotation.quotationitem_set.all %}
+            <tr style="border-bottom: 1px solid #e2e8f0; vertical-align: top;">
+                <td style="padding: 0.75rem 0.4rem; text-align: left;">{{ forloop.counter }}</td>
+                <td style="padding: 0.75rem 0.4rem; text-align: left;">
+                    <div style="font-weight: 800; color: #000;">{{ qi.item.name }}</div>
+                    {% if qi.item.description %}
+                    <div style="font-size: 0.78rem; color: #64748b; margin-top: 0.15rem;">{{ qi.item.description }}</div>
+                    {% endif %}
+                </td>
+                <td style="padding: 0.75rem 0.4rem; text-align: center;">{{ qi.item.hsn_code|default:"-" }}</td>
+                <td style="padding: 0.75rem 0.4rem; text-align: center;">{{ qi.quantity }}</td>
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">₹{{ qi.effective_price|floatformat:2 }}</td>
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">₹{{ qi.total|floatformat:2 }}</td>
+
+                {% if quotation.tax_type == 'IGST' %}
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">
+                    {% if qi.gst_percent and qi.gst_percent > 0 %}
+                    <div>₹{{ qi.igst_amount|floatformat:2 }}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">{{ qi.gst_percent|floatformat:2 }}%</div>
+                    {% else %}-{% endif %}
+                </td>
+                {% else %}
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">
+                    {% if qi.gst_percent and qi.gst_percent > 0 %}
+                    <div>₹{{ qi.cgst_amount|floatformat:2 }}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">{{ qi.cgst_percent|floatformat:2 }}%</div>
+                    {% else %}-{% endif %}
+                </td>
+                <td style="padding: 0.75rem 0.4rem; text-align: right;">
+                    {% if qi.gst_percent and qi.gst_percent > 0 %}
+                    <div>₹{{ qi.sgst_amount|floatformat:2 }}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">{{ qi.sgst_percent|floatformat:2 }}%</div>
+                    {% else %}-{% endif %}
+                </td>
+                {% endif %}
+
+                <td style="padding: 0.75rem 0.4rem; text-align: right; font-weight: 700;">
+                    ₹{{ qi.total|add:qi.cgst_amount|add:qi.sgst_amount|add:qi.igst_amount|floatformat:2 }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 1.5rem; color: #94a3b8;">No items in quotation.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Summary Row (Words on Left, Totals on Right) -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+        <div style="width: 55%; font-size: 0.88rem;">
+            <div style="font-weight: 800; font-size: 0.8rem; text-transform: uppercase; color: #0f172a; margin-bottom: 0.2rem;">AMOUNT IN WORDS:</div>
+            <div style="font-weight: 600; color: #1e293b; font-size: 0.95rem;">{{ quotation.total_in_words }}/-</div>
+        </div>
+
+        <div style="width: 40%;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <tr>
+                    <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">TAXABLE AMOUNT</td>
+                    <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 600;">₹{{ quotation.subtotal_after_discount|floatformat:2 }}</td>
+                </tr>
+                {% if quotation.gst_percent and quotation.gst_percent > 0 %}
+                    {% if quotation.tax_type == 'IGST' %}
+                    <tr>
+                        <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">IGST</td>
+                        <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 600;">₹{{ quotation.igst|floatformat:2 }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">CGST</td>
+                        <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 600;">₹{{ quotation.cgst|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.3rem 0.5rem; font-weight: 800; color: #0f172a; text-transform: uppercase;">SGST</td>
+                        <td style="padding: 0.3rem 0.5rem; text-align: right; font-weight: 600;">₹{{ quotation.sgst|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                {% endif %}
+                <tr style="background: #f1f5f9; border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a;">
+                    <td style="padding: 0.5rem; font-size: 1.05rem; font-weight: 900; color: #0f172a; text-transform: uppercase;">GRAND TOTAL</td>
+                    <td style="padding: 0.5rem; text-align: right; font-size: 1.05rem; font-weight: 900; color: #0f172a;">₹{{ quotation.total_amount|floatformat:2 }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Footer Instructions, UPI QR Code & Signature -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+        <div style="font-size: 0.85rem; line-height: 1.4; max-width: 55%; display: flex; gap: 1rem;">
+            <div>
+                {% if company and company.bank_name %}
+                <div style="font-weight: 800; text-transform: uppercase; margin-bottom: 0.25rem; color: #0f172a;">PAYMENT INSTRUCTIONS</div>
+                <div>{{ company.bank_name }}</div>
+                {% if company.account_no %}<div>A/c No: {{ company.account_no }}</div>{% endif %}
+                {% if company.ifsc_code %}<div>IFSC Code: {{ company.ifsc_code }}</div>{% endif %}
+                {% elif quotation.terms %}
+                <div style="font-weight: 800; text-transform: uppercase; margin-bottom: 0.25rem; color: #0f172a;">TERMS & CONDITIONS</div>
+                <div>{{ quotation.terms.content|linebreaksbr }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Scannable UPI QR Code -->
+            {% if upi_qr_url %}
+            <div style="text-align: center; font-size: 0.75rem;">
+                <img src="{{ upi_qr_url }}" alt="UPI QR Code" style="width: 100px; height: 100px; display: block; margin: 0 auto;">
+                <span style="font-weight: 700; color: #0f172a;">Scan to Pay via UPI</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="text-align: right;">
+            {% if company and company.signature %}
+            <img src="{{ company.signature.url }}" alt="Digital Signature" style="max-height: 60px; max-width: 160px; object-fit: contain; display: block; margin-left: auto; margin-bottom: 0.25rem;">
+            {% endif %}
+            <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a; text-transform: uppercase;">For, {{ company.name|default:"Company" }}</div>
+            <div style="margin-top: 0.5rem; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: #334155;">
+                {{ company.signatory_title|default:"AUTHORIZED SIGNATURE" }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function shareWhatsApp(docNo, totalAmt, pdfPath) {
+    const a = document.createElement('a');
+    a.href = pdfPath;
+    a.download = `Quotation_${docNo}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    const text = `Hello! Here is Quotation ${docNo} for Amount ₹${totalAmt}.`;
+
+    alert(`📥 Quotation_${docNo}.pdf has been saved to your Downloads folder!\n\nWhatsApp Web/App will open now. Pick your contact and click 📎 (Attach -> Document) to send the PDF file!`);
+
+    window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), "_blank");
+}
+</script>
 {% endblock %}

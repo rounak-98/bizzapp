@@ -1,35 +1,117 @@
 {% extends 'base.html' %}
+{% block title %}Dashboard - Online Quotation Maker{% endblock %}
+
 {% block content %}
-<header class="header">
-  <h1>Welcome ROUNAK</h1>
-  <p>Manage your business efficiently and professionally</p>
-</header>
-
-<div class="dashboard-wrapper">
-  <h2 class="dashboard-title">Dashboard</h2>
-
-  <!-- Manage Section (responsive) -->
-  <div class="dashboard-section">
-    <h3>Manage</h3>
-    <div class="button-grid">
-      <a href="{% url 'company_info' %}" class="btn"><i class="fa fa-building"></i> Company Info</a>
-      <a href="{% url 'customer_list' %}" class="btn"><i class="fa fa-users"></i> Customers</a>
-      <a href="{% url 'item_list' %}" class="btn"><i class="fa fa-box"></i> Items</a>
-      <a href="{% url 'term_list' %}" class="btn"><i class="fa fa-file-contract"></i> Terms</a>
+<div class="page-header">
+    <div>
+        <h2><i class="fa fa-gauge-high"></i> Dashboard Overview</h2>
+        <p style="color: #94a3b8; margin-top: 0.25rem;">Real-time quotation metrics, status tracking, and quick billing actions.</p>
     </div>
-  </div>
-
-  <!-- Discover Section (fixed 3-column layout) -->
-  <div class="dashboard-section">
-    <h3>Discover</h3>
-    <div class="button-grid discover">
-      <a href="{% url 'create_quotation' %}" class="btn"><i class="fa fa-pen"></i> Make Quotation</a>
-      <a href="{% url 'quotation_list' %}" class="btn"><i class="fa fa-file-alt"></i> View Quotations</a>
-      <a href="{% url 'create_invoice' %}" class="btn"><i class="fa fa-plus-circle"></i> Make Invoice</a>
-      <a href="{% url 'invoice_list' %}" class="btn"><i class="fa fa-file-invoice"></i> View Invoices</a>
-      <a href="{% url 'performa_list' %}" class="btn"><i class="fa fa-file-invoice"></i> Performa Invoice</a>
-      <a href="{% url 'revenue' %}" class="btn"><i class="fa fa-chart-line"></i> Revenue</a>
+    <div>
+        <a href="{% url 'create_quotation' %}" class="btn-primary">
+            <i class="fa fa-plus-circle"></i> Create New Quotation
+        </a>
     </div>
-  </div>
+</div>
+
+<!-- Metrics Cards -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="title">Total Quotations</div>
+        <div class="value">{{ total_quotes_count }}</div>
+        <div class="subtext">Active proposals</div>
+    </div>
+    <div class="metric-card accent-green">
+        <div class="title">Accepted Quotes</div>
+        <div class="value">{{ accepted_quotes_count }}</div>
+        <div class="subtext">₹{{ accepted_value|floatformat:2 }}</div>
+    </div>
+    <div class="metric-card accent-orange">
+        <div class="title">Pending Quotes</div>
+        <div class="value">{{ pending_quotes_count }}</div>
+        <div class="subtext">Drafts & Sent proposals</div>
+    </div>
+    <div class="metric-card accent-purple">
+        <div class="title">Converted Invoices</div>
+        <div class="value">{{ converted_quotes_count }}</div>
+        <div class="subtext">Converted from quotes</div>
+    </div>
+    <div class="metric-card">
+        <div class="title">Total Invoiced</div>
+        <div class="value" style="color: #22c55e;">₹{{ total_invoiced_value|floatformat:2 }}</div>
+        <div class="subtext">Billed revenue</div>
+    </div>
+</div>
+
+<!-- Quick Action Cards Grid -->
+<h3 style="color: #38bdf8; margin-bottom: 1rem;"><i class="fa fa-bolt"></i> Quick Actions</h3>
+<div class="button-grid">
+    <a href="{% url 'create_quotation' %}" class="btn-card">
+        <i class="fa fa-file-signature" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: #38bdf8;"></i>
+        New Quotation
+    </a>
+    <a href="{% url 'quotation_list' %}" class="btn-card">
+        <i class="fa fa-list-check" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: #a855f7;"></i>
+        All Quotations
+    </a>
+    <a href="{% url 'create_invoice' %}" class="btn-card">
+        <i class="fa fa-receipt" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: #22c55e;"></i>
+        New Invoice
+    </a>
+    <a href="{% url 'customer_list' %}" class="btn-card">
+        <i class="fa fa-users" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: #f97316;"></i>
+        Customers ({{ total_customers_count }})
+    </a>
+    <a href="{% url 'item_list' %}" class="btn-card">
+        <i class="fa fa-box-open" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: #06b6d4;"></i>
+        Inventory Items ({{ total_items_count }})
+    </a>
+    <a href="{% url 'company_info' %}" class="btn-card">
+        <i class="fa fa-building" style="font-size: 1.8rem; margin-bottom: 0.5rem; color: #eab308;"></i>
+        Company Branding
+    </a>
+</div>
+
+<!-- Recent Quotations Section -->
+<div style="margin-top: 2.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="color: #38bdf8;"><i class="fa fa-clock-rotate-left"></i> Recent Quotations</h3>
+        <a href="{% url 'quotation_list' %}" style="color: #38bdf8; text-decoration: none; font-size: 0.9rem; font-weight: 600;">View All →</a>
+    </div>
+
+    {% if recent_quotations %}
+    <div class="table-responsive">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Ref #</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in recent_quotations %}
+                <tr>
+                    <td><strong>{{ q.quote_number|default:q.id }}</strong></td>
+                    <td>{{ q.customer.name }}</td>
+                    <td>{{ q.date|date:"Y-m-d" }}</td>
+                    <td><span class="badge badge-{{ q.status|lower }}">{{ q.status }}</span></td>
+                    <td><strong>₹{{ q.total_amount|floatformat:2 }}</strong></td>
+                    <td>
+                        <a href="{% url 'quotation_detail' q.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                            <i class="fa fa-eye"></i> View / Print
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: #94a3b8; font-style: italic;">No quotations generated yet. Click 'Create New Quotation' to get started.</p>
+    {% endif %}
 </div>
 {% endblock %}

@@ -1,65 +1,137 @@
 {% extends 'base.html' %}
+{% block title %}Performa Invoice - {{ quotation.quote_number|default:quotation.id }}{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <h2>Performa Invoice</h2>
-  <div class="company">
-    <h3>{{ company.name }}</h3>
-    <p>GST: {{ company.gst_no }}</p>
-    <p>{{ company.email }}</p>
-  </div>
+<!-- Screen Toolbar -->
+<div class="doc-toolbar no-print">
+    <div>
+        <a href="{% url 'quotation_detail' quotation.id %}" class="btn-secondary">
+            <i class="fa fa-arrow-left"></i> Back to Quotation
+        </a>
+    </div>
+    <div>
+        <button onclick="window.print()" class="btn-primary">
+            <i class="fa fa-print"></i> Print / Save Performa PDF
+        </button>
+    </div>
+</div>
 
-  <h3>Bill To</h3>
-  <p>{{ quotation.customer.name }}</p>
-  <p>{{ quotation.customer.email }}</p>
-  <p>{{ quotation.customer.phone }}</p>
+<!-- A4 Document Container -->
+<div class="document-wrapper">
+    <div class="doc-header">
+        <div class="doc-brand">
+            {% if company and company.logo_url %}
+            <img src="{{ company.logo_url }}" alt="Logo" class="doc-logo">
+            {% endif %}
+            <div>
+                <div class="doc-company-name">{{ company.name|default:"Company Name" }}</div>
+                <div style="font-size: 0.85rem; color: #64748b;">
+                    {% if company.address %}{{ company.address }}<br>{% endif %}
+                    {% if company.gst_no %}<strong>GSTIN:</strong> {{ company.gst_no }} | {% endif %}
+                    {% if company.email %}<strong>Email:</strong> {{ company.email }}{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="doc-title-block">
+            <div class="doc-title" style="color: #ea580c;">PERFORMA INVOICE</div>
+            <div class="doc-ref-number">PI-{{ quotation.quote_number|default:quotation.id }}</div>
+            <div style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;">
+                Date: <strong>{% now "d M Y" %}</strong>
+            </div>
+        </div>
+    </div>
 
-  <h3>Items</h3>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Item</th>
-        <th>Qty</th>
-        <th>Price</th>
-        <th>CGST</th>
-        <th>SGST</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for qi in items %}
-      <tr>
-        <td>{{ qi.item.name }}</td>
-        <td>{{ qi.quantity }}</td>
-        <td>₹{{ qi.item.price|floatformat:2 }}</td>
-        <td>₹{{ qi.cgst_amount|floatformat:2 }}</td>
-        <td>₹{{ qi.sgst_amount|floatformat:2 }}</td>
-        <td>₹{{ qi.total|floatformat:2 }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <div class="doc-meta-grid">
+        <div class="doc-meta-block">
+            <h4>Customer Information:</h4>
+            <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a;">{{ quotation.customer.name }}</div>
+            {% if quotation.customer.address %}<div>{{ quotation.customer.address }}</div>{% endif %}
+            {% if quotation.customer.email %}<div>Email: {{ quotation.customer.email }}</div>{% endif %}
+            {% if quotation.customer.phone %}<div>Phone: {{ quotation.customer.phone }}</div>{% endif %}
+        </div>
+        <div class="doc-meta-block">
+            <h4>Payment Receipt & Advance Summary:</h4>
+            {% if amount_paid is not None %}
+            <div>Advance Received: <strong>₹{{ amount_paid|floatformat:2 }}</strong></div>
+            <div>Remaining Balance: <strong style="color: #dc2626;">₹{{ remaining|floatformat:2 }}</strong></div>
+            {% if paid_on %}<div>Received Date: {{ paid_on }}</div>{% endif %}
+            {% if note %}<div>Note: "{{ note }}"</div>{% endif %}
+            {% else %}
+            <div>Status: Provisional Advance Request</div>
+            {% endif %}
+        </div>
+    </div>
 
-  <h4>Subtotal: ₹{{ quotation.subtotal|floatformat:2 }}</h4>
-  {% if quotation.gst_percent and quotation.gst_percent|floatformat:2 != '0.00' %}
-    <p>GST ({{ quotation.gst_percent }}%):</p>
-    <p>&nbsp;&nbsp;CGST: ₹{{ quotation.cgst|floatformat:2 }}</p>
-    <p>&nbsp;&nbsp;SGST: ₹{{ quotation.sgst|floatformat:2 }}</p>
-  {% endif %}
-  <h3>Total Amount: ₹{{ quotation.total_with_tax|floatformat:2 }}</h3>
-  {% if amount_paid is not None %}
-    <p><strong>Amount Paid:</strong> ₹{{ amount_paid|floatformat:2 }}</p>
-    <p><strong>Remaining:</strong> ₹{{ remaining|floatformat:2 }}</p>
-    {% if paid_on %}
-      <p><strong>Paid On:</strong> {{ paid_on }}</p>
-    {% endif %}
-    {% if note %}
-      <p><strong>Note:</strong> {{ note }}</p>
-    {% endif %}
-  {% endif %}
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Item / Description</th>
+                <th style="text-align: center;">Qty / Unit</th>
+                <th style="text-align: right;">Unit Price</th>
+                <th style="text-align: right;">Amount (INR)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for qi in items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><strong>{{ qi.item.name }}</strong></td>
+                <td style="text-align: center;">{{ qi.quantity }} {{ qi.unit }}</td>
+                <td style="text-align: right;">₹{{ qi.effective_price|floatformat:2 }}</td>
+                <td style="text-align: right;"><strong>₹{{ qi.total|floatformat:2 }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-  <div style="margin-top:1rem;">
-    <button onclick="window.print()" class="btn"><i class="fa fa-print"></i> Print Performa</button>
-    <a href="{% url 'quotation_detail' quotation.id %}" class="btn">Back</a>
-  </div>
+    <div class="doc-totals">
+        <div class="doc-totals-box">
+            <div class="doc-row">
+                <span>Subtotal:</span>
+                <span>₹{{ quotation.subtotal|floatformat:2 }}</span>
+            </div>
+            {% if quotation.gst_percent and quotation.gst_percent > 0 %}
+            <div class="doc-row">
+                <span>GST ({{ quotation.gst_percent }}%):</span>
+                <span>₹{{ quotation.tax_amount|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+            <div class="doc-row grand-total">
+                <span>Total Amount:</span>
+                <span>₹{{ quotation.total_amount|floatformat:2 }}</span>
+            </div>
+            {% if amount_paid is not None %}
+            <div class="doc-row" style="color: #16a34a; font-weight: 600;">
+                <span>Paid Advance:</span>
+                <span>- ₹{{ amount_paid|floatformat:2 }}</span>
+            </div>
+            <div class="doc-row" style="color: #dc2626; font-size: 1.1rem; font-weight: 700;">
+                <span>Balance Due:</span>
+                <span>₹{{ remaining|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="doc-footer-grid">
+        <div>
+            {% if company and company.bank_name %}
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: #64748b; margin-bottom: 0.5rem;">Bank Details for Payment Transfer:</h4>
+            <div style="font-size: 0.85rem; color: #334155;">
+                <strong>Bank Name:</strong> {{ company.bank_name }}<br>
+                {% if company.account_no %}<strong>A/C No:</strong> {{ company.account_no }}<br>{% endif %}
+                {% if company.ifsc_code %}<strong>IFSC:</strong> {{ company.ifsc_code }}<br>{% endif %}
+                {% if company.upi_id %}<strong>UPI ID:</strong> {{ company.upi_id }}{% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="doc-signature">
+            <div style="font-size: 0.9rem; font-weight: 600; color: #0f172a;">For {{ company.name|default:"Company" }}</div>
+            <div class="doc-signature-line">
+                {{ company.signatory_title|default:"Authorized Signatory" }}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

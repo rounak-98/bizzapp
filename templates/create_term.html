@@ -1,13 +1,33 @@
 {% extends 'base.html' %}
+{% block title %}{% if editing %}Edit Terms Preset{% else %}Add Terms Preset{% endif %}{% endblock %}
+
 {% block content %}
 <div class="form-container">
-  <h2>Add Term</h2>
+  <h2>
+    <i class="fa fa-file-contract"></i> 
+    {% if editing %}Edit Terms Preset: {{ term.title }}{% else %}Add New Terms & Conditions Preset{% endif %}
+  </h2>
+  <p style="text-align: center; color: #94a3b8; margin-bottom: 1.5rem;">
+    Create reusable terms, payment policies, or warranty clauses that can be applied to quotations and invoices.
+  </p>
+
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn">
-      <i class="fa fa-file-contract"></i> Save Term
-    </button>
+    <div class="form-group" style="margin-bottom: 1.25rem;">
+      <label style="display: block; margin-bottom: 0.3rem; font-weight: 600;">Preset Title *</label>
+      {{ form.title }}
+    </div>
+    <div class="form-group" style="margin-bottom: 1.5rem;">
+      <label style="display: block; margin-bottom: 0.3rem; font-weight: 600;">Terms & Conditions Content *</label>
+      {{ form.content }}
+    </div>
+    
+    <div style="text-align: right; display: flex; gap: 0.75rem; justify-content: flex-end;">
+      <a href="{% url 'term_list' %}" class="btn-secondary">Cancel</a>
+      <button type="submit" class="btn-primary">
+        <i class="fa fa-save"></i> Save Terms Preset
+      </button>
+    </div>
   </form>
 </div>
 {% endblock %}

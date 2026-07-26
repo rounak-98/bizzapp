@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Statement of Account - {{ customer.name }}{% endblock %}
+
+{% block content %}
+<!-- Screen-only Toolbar -->
+<div class="doc-toolbar no-print">
+    <div>
+        <a href="{% url 'customer_list' %}" class="btn-secondary">
+            <i class="fa fa-arrow-left"></i> Back to Customers
+        </a>
+    </div>
+    <div>
+        <button onclick="window.print()" class="btn-primary">
+            <i class="fa fa-print"></i> Print Statement PDF
+        </button>
+    </div>
+</div>
+
+<!-- A4 Printable Document Container -->
+<div class="document-wrapper" style="background: #ffffff; color: #000000; padding: 2.5rem; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 850px; margin: 1.5rem auto;">
+    
+    <!-- Top Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+        <div style="width: 140px;">
+            {% if company and company.logo %}
+            <img src="{{ company.logo.url }}" alt="Logo" style="max-width: 100%; height: auto; max-height: 80px; object-fit: contain;">
+            {% elif company and company.logo_url %}
+            <img src="{{ company.logo_url }}" alt="Logo" style="max-width: 100%; height: auto; max-height: 80px; object-fit: contain;">
+            {% endif %}
+        </div>
+        
+        <div style="text-align: center; flex-grow: 1; padding: 0 1rem; line-height: 1.35; font-size: 0.9rem;">
+            <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem;">{{ company.name|default:"Company Name" }}</div>
+            {% if company.address %}<div>{{ company.address }}</div>{% endif %}
+            <div>
+                {% if company.phone %}📱 {{ company.phone }} {% endif %}
+                {% if company.email %}✉️ {{ company.email }}{% endif %}
+            </div>
+            {% if company.gst_no %}<div style="font-weight: 700; color: #0f172a;">GSTIN: {{ company.gst_no }}</div>{% endif %}
+        </div>
+        
+        <div style="text-align: right; font-size: 1.5rem; font-weight: 900; color: #0f172a; width: 170px; line-height: 1.1;">
+            STATEMENT OF ACCOUNT
+        </div>
+    </div>
+
+    <!-- Customer Details & Summary -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; font-size: 0.9rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <div>
+            <div style="font-size: 0.85rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 0.2rem;">STATEMENT FOR</div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: #000;">{{ customer.name }}</div>
+            {% if customer.gstin %}<div style="font-weight: 700;">GSTIN: {{ customer.gstin }}</div>{% endif %}
+            {% if customer.address %}<div>{{ customer.address }}</div>{% endif %}
+            {% if customer.email %}<div>Email: {{ customer.email }}</div>{% endif %}
+            {% if customer.phone %}<div>Phone: {{ customer.phone }}</div>{% endif %}
+        </div>
+        
+        <div>
+            <table style="border-collapse: collapse; margin-left: auto; font-size: 0.95rem;">
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">Statement Date:</td>
+                    <td style="text-align: right; font-weight: 600; padding: 0.15rem 0.5rem;">{% now "d/m/Y" %}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 800; color: #0f172a; text-align: right; padding: 0.15rem 0.5rem;">Total Billed:</td>
+                    <td style="text-align: right; padding: 0.15rem 0.5rem;">₹{{ customer.total_billed|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 800; color: #16a34a; text-align: right; padding: 0.15rem 0.5rem;">Total Payments:</td>
+                    <td style="text-align: right; color: #16a34a; font-weight: 600; padding: 0.15rem 0.5rem;">₹{{ customer.total_paid|floatformat:2 }}</td>
+                </tr>
+                <tr style="background: #f1f5f9; border-top: 1px solid #0f172a; border-bottom: 1px solid #0f172a;">
+                    <td style="font-weight: 900; color: #dc2626; text-align: right; padding: 0.3rem 0.5rem;">Balance Due:</td>
+                    <td style="text-align: right; color: #dc2626; font-weight: 900; font-size: 1.05rem; padding: 0.3rem 0.5rem;">₹{{ customer.balance_due|floatformat:2 }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Invoices Ledger Table -->
+    <h4 style="font-size: 0.9rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 0.5rem;">Billed Invoices History</h4>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.88rem;">
+        <thead>
+            <tr style="background: #f1f5f9; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800;">INVOICE #</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800;">DATE</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: center; font-weight: 800;">STATUS</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800;">TOTAL AMOUNT</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800;">PAID AMOUNT</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800;">BALANCE DUE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inv in invoices %}
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 0.65rem 0.4rem; font-weight: 700;">{{ inv.invoice_number|default:inv.id }}</td>
+                <td style="padding: 0.65rem 0.4rem;">{{ inv.issued_date|date:"d/m/Y" }}</td>
+                <td style="padding: 0.65rem 0.4rem; text-align: center;">{{ inv.status }}</td>
+                <td style="padding: 0.65rem 0.4rem; text-align: right;">₹{{ inv.total_amount|floatformat:2 }}</td>
+                <td style="padding: 0.65rem 0.4rem; text-align: right; color: #16a34a;">₹{{ inv.paid_amount|floatformat:2 }}</td>
+                <td style="padding: 0.65rem 0.4rem; text-align: right; font-weight: 700; color: #dc2626;">₹{{ inv.balance_due|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 1.5rem; color: #94a3b8;">No invoices generated for this customer yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Payments Received Table -->
+    {% if payments %}
+    <h4 style="font-size: 0.9rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 0.5rem; margin-top: 1.5rem;">Payments & Receipts Received</h4>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.88rem;">
+        <thead>
+            <tr style="background: #f1f5f9; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800;">DATE</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800;">INVOICE #</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800;">MODE</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: left; font-weight: 800;">REF / UTR NO</th>
+                <th style="padding: 0.6rem 0.4rem; text-align: right; font-weight: 800;">AMOUNT PAID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in payments %}
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 0.65rem 0.4rem;">{{ p.payment_date|date:"d/m/Y" }}</td>
+                <td style="padding: 0.65rem 0.4rem; font-weight: 700;">{{ p.invoice.invoice_number|default:p.invoice.id }}</td>
+                <td style="padding: 0.65rem 0.4rem;">{{ p.payment_mode }}</td>
+                <td style="padding: 0.65rem 0.4rem;">{{ p.reference_no|default:"-" }}</td>
+                <td style="padding: 0.65rem 0.4rem; text-align: right; font-weight: 700; color: #16a34a;">₹{{ p.amount_paid|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Footer Instructions & Signature -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+        <div style="font-size: 0.85rem; line-height: 1.4; max-width: 55%;">
+            {% if company and company.bank_name %}
+            <div style="font-weight: 800; text-transform: uppercase; margin-bottom: 0.25rem; color: #0f172a;">BANK DETAILS FOR REMITTANCE</div>
+            <div>{{ company.bank_name }}</div>
+            {% if company.account_no %}<div>A/c No: {{ company.account_no }}</div>{% endif %}
+            {% if company.ifsc_code %}<div>IFSC Code: {{ company.ifsc_code }}</div>{% endif %}
+            {% endif %}
+        </div>
+
+        <div style="text-align: right;">
+            {% if company and company.signature %}
+            <img src="{{ company.signature.url }}" alt="Signature" style="max-height: 60px; max-width: 160px; object-fit: contain; display: block; margin-left: auto; margin-bottom: 0.25rem;">
+            {% endif %}
+            <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a; text-transform: uppercase;">For, {{ company.name|default:"Company" }}</div>
+            <div style="margin-top: 0.5rem; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; color: #334155;">
+                {{ company.signatory_title|default:"AUTHORIZED SIGNATURE" }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

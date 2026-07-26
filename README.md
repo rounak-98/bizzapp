@@ -1,62 +1,44 @@
-# BizApp 💼
+# BizApp 💼 - Online Quotation & Invoice Maker
 
-Minimal Django invoicing/quotation app with GST breakdown, customer management, and a professional admin dashboard.
+Professional Django online Quotation and Tax Invoice Maker app with document status tracking, custom line-item pricing, 1-click quote-to-invoice conversion, printable A4 PDF layouts, GST breakdown, company branding, and analytics.
 
 ---
 
 ## ✨ Features
-- 🧾 Generate quotations and invoices with CGST/SGST calculations
-- 👥 Manage customers, items, and company info
-- 📊 View and print detailed financial documents
-- 🎨 Glassmorphic UI with modular templates
-- 🔐 Secure admin panel with superuser access
-- 🧪 Built-in testing and linting tools
+- 🧾 **Professional Quotations**: Custom quote numbering (`QTN-2026-0001`), status tracking (`Draft`, `Sent`, `Accepted`, `Rejected`, `Expired`, `Converted`), validity dates, line pricing overrides, and unit discounts.
+- ⚡ **1-Click Quote-to-Invoice Conversion**: Instantly convert accepted proposals into official Tax Invoices with copied line items.
+- 📑 **Printable A4 PDF Layouts**: Clean `@media print` styling for Quotation proposals, Tax Invoices, and Performa advance receipts with company logo, bank details, and signature blocks.
+- 👥 **Customer & Inventory Directory**: Manage customer details, products/services, standard pricing, and units.
+- 🏢 **Company Branding & Payment Setup**: Custom company logo, GSTIN, bank account numbers, IFSC, UPI ID, and signatory titles.
+- 📊 **Dashboard & Financial Analytics**: Real-time proposal metrics cards, revenue tracking (paid vs pending balance), search, and status filters.
+- 🧪 **Unit Test Suite**: Automated verification for quote calculations, tax splitting, and status transitions.
 
 ---
 
 ## ⚙️ Tech Stack
 - **Backend:** Django 6.0.1 (Python 3.13)
 - **Database:** MySQL (via `mysqlclient`)
-- **Frontend:** HTML, CSS, JavaScript
+- **Frontend:** HTML5, Modern Glassmorphic CSS, JavaScript
 - **Environment:** Virtualenv on Windows
 
 ---
 
-## 🚀 Setup (Windows PowerShell)
+## 🚀 Quick Setup (Windows PowerShell)
 
-```bash
+```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-cp .env.example .env  # fill in values
-python manage.py migrate
-python manage.py runserver
+.\.venv\Scripts\python.exe manage.py migrate
+.\.venv\Scripts\python.exe manage.py runserver
+```
 
 Run tests:
-
 ```powershell
-python manage.py test
+.\.venv\Scripts\python.exe manage.py test core
 ```
-
-Run linters / formatters:
-
-```powershell
-.\.venv\Scripts\python.exe -m isort .
-.\.venv\Scripts\python.exe -m black .
-.\.venv\Scripts\python.exe -m flake8 .
-```
-
-Notes:
-- Keep `SECRET_KEY` and DB credentials in environment variables or a secret manager.
-- Use `.env.example` as a template; don't commit `.env`.
-👤 Author
-Rounak Pathak
-📧 ronakpathak9080@gmail.com
 
 ---
 
-👉 Copy this into your `README.md`, commit it, and push:
-```powershell
-git add README.md
-git commit -m "Update README with full project overview"
-git push
+👤 **Author**: Rounak Pathak  
+📧 **Email**: ronakpathak9080@gmail.com

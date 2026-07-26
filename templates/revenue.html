@@ -1,28 +1,59 @@
 {% extends 'base.html' %}
-{% block content %}
-<div class="form-container">
-  <h2>Company Revenue</h2>
-  <p><strong>Total Revenue:</strong> ₹{{ total_revenue }}</p>
+{% block title %}Revenue & Financial Analytics{% endblock %}
 
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Invoice No</th>
-        <th>Date</th>
-        <th>Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for invoice in invoices %}
-        <tr>
-          <td>{{ invoice.id }}</td>
-          <td>{{ invoice.issued_date }}</td>
-          <td>₹{{ invoice.total_amount|floatformat:2 }}</td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="3">No invoices found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2><i class="fa fa-chart-line"></i> Revenue & Financial Summary</h2>
+        <p style="color: #94a3b8; margin-top: 0.25rem;">Analytics on billed invoices, paid receipts, and pending receivables.</p>
+    </div>
+</div>
+
+<div class="metrics-grid">
+    <div class="metric-card accent-green">
+        <div class="title">Total Billed Revenue</div>
+        <div class="value">₹{{ total_revenue|floatformat:2 }}</div>
+        <div class="subtext">Across all tax invoices</div>
+    </div>
+    <div class="metric-card accent-green">
+        <div class="title">Paid Receipts</div>
+        <div class="value">₹{{ paid_revenue|floatformat:2 }}</div>
+        <div class="subtext">Cleared payments</div>
+    </div>
+    <div class="metric-card accent-orange">
+        <div class="title">Pending / Outstanding</div>
+        <div class="value">₹{{ unpaid_revenue|floatformat:2 }}</div>
+        <div class="subtext">Unpaid & Overdue balance</div>
+    </div>
+</div>
+
+<div class="table-responsive" style="margin-top: 2rem;">
+    <h3 style="color: #38bdf8; margin-bottom: 1rem;"><i class="fa fa-receipt"></i> Billed Invoices Breakdown</h3>
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Issued Date</th>
+                <th>Status</th>
+                <th>Amount (INR)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td><strong>{{ invoice.invoice_number|default:invoice.id }}</strong></td>
+                <td>{{ invoice.issued_date|date:"Y-m-d" }}</td>
+                <td><span class="badge badge-{{ invoice.status|slugify }}">{{ invoice.status }}</span></td>
+                <td><strong>₹{{ invoice.total_amount|floatformat:2 }}</strong></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                    No invoices generated yet.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

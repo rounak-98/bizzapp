@@ -1,47 +1,204 @@
 {% extends 'base.html' %}
+{% block title %}{% if editing %}Edit Quotation {{ quotation.quote_number|default:quotation.id }}{% else %}Create Quotation{% endif %}{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <h2>Create Quotation</h2>
+<div class="form-container" style="max-width: 960px;">
+  <h2>
+    <i class="fa fa-file-signature"></i> 
+    {% if editing %}Edit Quotation {{ quotation.quote_number|default:quotation.id }}{% else %}Create New Quotation{% endif %}
+  </h2>
+
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
 
-    <h3>Items</h3>
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label>Customer *</label>
+        {{ form.customer }}
+      </div>
+      <div class="form-group">
+        <label>Quote Number (Auto if blank)</label>
+        {{ form.quote_number }}
+      </div>
+      <div class="form-group">
+        <label>Quotation Date</label>
+        {{ form.date }}
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        {{ form.status }}
+      </div>
+      <div class="form-group">
+        <label>Valid Until Date</label>
+        {{ form.valid_until }}
+      </div>
+      <div class="form-group">
+        <label>Tax Structure</label>
+        {{ form.tax_type }}
+      </div>
+
+      <div class="form-group">
+        <label>Discount Amount (₹)</label>
+        {{ form.discount_amount }}
+      </div>
+      <div class="form-group">
+        <label>PO Number (Optional)</label>
+        {{ form.po_number }}
+      </div>
+      <div class="form-group">
+        <label>PO Date (Optional)</label>
+        {{ form.po_date }}
+      </div>
+
+      <div class="form-group full-width">
+        <label>Terms & Conditions Preset (Select to auto-fill notes)</label>
+        {{ form.terms }}
+      </div>
+      <div class="form-group full-width">
+        <label>Custom Terms & Notes (Editable for this document)</label>
+        {{ form.notes }}
+      </div>
+    </div>
+
+    <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #38bdf8;"><i class="fa fa-boxes-stacked"></i> Quotation Line Items</h3>
     {{ formset.management_form }}
+
     <div id="items-wrapper">
-      {% for form in formset %}
-        <div class="item-row">{{ form.as_p }}</div>
+      {% for item_form in formset %}
+      <div class="item-row-grid">
+        {{ item_form.id }}
+        <div class="form-group item-col-name">
+          <label>Product / Service *</label>
+          {{ item_form.item }}
+        </div>
+        <div class="form-group">
+          <label>Qty</label>
+          {{ item_form.quantity }}
+        </div>
+        <div class="form-group">
+          <label>Price (₹)</label>
+          {{ item_form.unit_price }}
+        </div>
+        <div class="form-group">
+          <label>GST %</label>
+          {{ item_form.gst_percent }}
+        </div>
+        <div class="form-group">
+          <label>Unit</label>
+          {{ item_form.unit }}
+        </div>
+        <div class="form-group">
+          <label>Discount (₹)</label>
+          {{ item_form.discount }}
+        </div>
+        {% if formset.can_delete %}
+        <div class="form-group item-col-del" style="justify-content: flex-end; align-items: center; height: 100%;">
+          <label style="cursor: pointer; color: #f87171; font-size: 0.82rem; white-space: nowrap;">
+            {{ item_form.DELETE }} Remove
+          </label>
+        </div>
+        {% endif %}
+      </div>
       {% endfor %}
     </div>
 
-    <button type="button" id="add-item-btn" class="btn" style="margin-top:0.5rem;">+ Add Item</button>
+    <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+      <button type="button" id="add-item-btn" class="btn-secondary">
+        <i class="fa fa-plus"></i> Add Another Line Item
+      </button>
 
-    <script>
-      (function(){
-        const addBtn = document.getElementById('add-item-btn');
-        const itemsWrapper = document.getElementById('items-wrapper');
-        const totalFormsInput = document.querySelector('[name="' + '{{ formset.prefix }}-TOTAL_FORMS' + '"]');
-        const emptyFormHtml = `{{ formset.empty_form.as_p|escapejs }}`;
-
-        function updateIndex(html, index){
-          return html.replace(/__prefix__/g, index);
-        }
-
-        addBtn.addEventListener('click', function(){
-          let total = parseInt(totalFormsInput.value, 10);
-          const newHtml = updateIndex(emptyFormHtml, total);
-          const container = document.createElement('div');
-          container.className = 'item-row';
-          container.innerHTML = newHtml;
-          itemsWrapper.appendChild(container);
-          totalFormsInput.value = total + 1;
-        });
-      })();
-    </script>
-
-    <button type="submit" class="btn">
-      <i class="fa fa-file-alt"></i> Save Quotation
-    </button>
+      <button type="submit" class="btn-primary">
+        <i class="fa fa-save"></i> Save Quotation
+      </button>
+    </div>
   </form>
 </div>
+
+<style>
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.1rem;
+}
+.form-grid-3 .full-width {
+  grid-column: span 3;
+}
+@media (max-width: 768px) {
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .form-grid-3 .full-width {
+    grid-column: span 1;
+  }
+}
+.item-row-grid {
+  display: grid;
+  grid-template-columns: 2.2fr 0.8fr 1fr 0.8fr 0.8fr 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.85rem;
+}
+@media (max-width: 900px) {
+  .item-row-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+</style>
+
+<script>
+(function(){
+  const addBtn = document.getElementById('add-item-btn');
+  const itemsWrapper = document.getElementById('items-wrapper');
+  const totalFormsInput = document.querySelector('[name="{{ formset.prefix }}-TOTAL_FORMS"]');
+
+  if (addBtn && itemsWrapper && totalFormsInput) {
+    addBtn.addEventListener('click', function(){
+      let total = parseInt(totalFormsInput.value, 10);
+      const firstRow = itemsWrapper.querySelector('.item-row-grid');
+      if (!firstRow) return;
+
+      const newRow = firstRow.cloneNode(true);
+      const regex = new RegExp('{{ formset.prefix }}-0-', 'g');
+
+      newRow.innerHTML = newRow.innerHTML.replace(regex, `{{ formset.prefix }}-${total}-`);
+      
+      newRow.querySelectorAll('input:not([type="hidden"]), select').forEach(el => {
+        if (el.type === 'checkbox') {
+          el.checked = false;
+        } else if (el.name.includes('unit')) {
+          el.value = 'Pcs';
+        } else if (el.name.includes('quantity')) {
+          el.value = '1';
+        } else if (el.name.includes('gst_percent')) {
+          el.value = '18.00';
+        } else {
+          el.value = '';
+        }
+      });
+
+      itemsWrapper.appendChild(newRow);
+      totalFormsInput.value = total + 1;
+    });
+  }
+
+  // Terms Preset Auto-fill
+  const termsSelect = document.querySelector('[name="terms"]');
+  const notesTextarea = document.querySelector('[name="notes"]');
+  const termsJsonData = {{ terms_json|default:"{}"|safe }};
+
+  if (termsSelect && notesTextarea && termsJsonData) {
+    termsSelect.addEventListener('change', function(){
+      const termId = this.value;
+      if (termId && termsJsonData[termId]) {
+        notesTextarea.value = termsJsonData[termId];
+      }
+    });
+  }
+})();
+</script>
 {% endblock %}

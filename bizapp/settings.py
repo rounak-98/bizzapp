@@ -1,4 +1,3 @@
-
 import os
 from pathlib import Path
 
@@ -59,6 +58,10 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# Media files (User uploaded logos, etc.)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 # Database: use MySQL directly
 DATABASES = {
     "default": {
@@ -73,10 +76,3 @@ DATABASES = {
         },
     }
 }
-
-#& .venv\Scripts\activate
-# python manage.py runserver
-#.\.venv\Scripts\python.exe manage.py runserver
-'''git add .
-git commit -m "Describe your change"
-git push'''

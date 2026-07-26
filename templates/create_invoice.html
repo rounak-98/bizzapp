@@ -1,43 +1,188 @@
 {% extends 'base.html' %}
+{% block title %}Create Invoice{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <h2>Create Invoice</h2>
+<div class="form-container" style="max-width: 960px;">
+  <h2><i class="fa fa-receipt"></i> Create Tax Invoice</h2>
+
   <form method="post">
     {% csrf_token %}
-    
-    <!-- Quotation field -->
-    <div class="form-group">
-      <label for="id_quotation">Quotation (optional)</label>
-      {{ form.quotation }}
-    </div>
 
-    <!-- GST field -->
-    <div class="form-group">
-      <label for="id_gst_percent">GST (%)</label>
-      {{ form.gst_percent }}
+    <div class="form-grid-3">
+      <div class="form-group full-width-2">
+        <label>Link Existing Quotation (Optional)</label>
+        {{ form.quotation }}
+        <small style="color: #94a3b8;">If selected, line items and customer info can be derived directly from quote.</small>
+      </div>
+      <div class="form-group">
+        <label>Invoice Number (Auto if blank)</label>
+        {{ form.invoice_number }}
+      </div>
+
+      <div class="form-group">
+        <label>Invoice Date</label>
+        {{ form.issued_date }}
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        {{ form.status }}
+      </div>
+      <div class="form-group">
+        <label>Due Date</label>
+        {{ form.due_date }}
+      </div>
+
+      <div class="form-group">
+        <label>Tax Structure</label>
+        {{ form.tax_type }}
+      </div>
+      <div class="form-group">
+        <label>Flat Discount Amount (₹)</label>
+        {{ form.discount_amount }}
+      </div>
+      <div class="form-group">
+        <label>PO Number (Optional)</label>
+        {{ form.po_number }}
+      </div>
+
+      <div class="form-group full-width">
+        <label>Notes / Billing Details</label>
+        {{ form.notes }}
+      </div>
     </div>
 
     {% if formset %}
-      <h3>Items</h3>
+      <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #38bdf8;">
+        <i class="fa fa-boxes-stacked"></i> Direct Line Items (If not using Quotation)
+      </h3>
       {{ formset.management_form }}
-      <table class="styled-table">
-        <thead>
-          <tr><th>Item</th><th>Quantity</th></tr>
-        </thead>
-        <tbody>
-          {% for f in formset.forms %}
-            <tr>
-              <td>{{ f.item }}</td>
-              <td>{{ f.quantity }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      
+      <div id="invoice-items-wrapper">
+        {% for f in formset %}
+        <div class="item-row-grid">
+          {{ f.id }}
+          <div class="form-group">
+            <label>Product / Service *</label>
+            {{ f.item }}
+          </div>
+          <div class="form-group">
+            <label>Qty</label>
+            {{ f.quantity }}
+          </div>
+          <div class="form-group">
+            <label>Price (₹)</label>
+            {{ f.unit_price }}
+          </div>
+          <div class="form-group">
+            <label>GST %</label>
+            {{ f.gst_percent }}
+          </div>
+          <div class="form-group">
+            <label>Unit</label>
+            {{ f.unit }}
+          </div>
+          <div class="form-group">
+            <label>Discount (₹)</label>
+            {{ f.discount }}
+          </div>
+          {% if formset.can_delete %}
+          <div class="form-group" style="justify-content: flex-end; align-items: center; height: 100%;">
+            <label style="cursor: pointer; color: #f87171; font-size: 0.82rem; white-space: nowrap;">
+              {{ f.DELETE }} Remove
+            </label>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" id="add-invoice-item-btn" class="btn-secondary" style="margin-top: 1rem;">
+        <i class="fa fa-plus"></i> Add Item Row
+      </button>
     {% endif %}
 
-    <button type="submit" class="btn">
-      <i class="fa fa-file-invoice"></i> Save Invoice
-    </button>
+    <div style="margin-top: 1.5rem; text-align: right;">
+      <button type="submit" class="btn-primary">
+        <i class="fa fa-save"></i> Save & Generate Invoice
+      </button>
+    </div>
   </form>
 </div>
+
+<style>
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.1rem;
+}
+.form-grid-3 .full-width {
+  grid-column: span 3;
+}
+.form-grid-3 .full-width-2 {
+  grid-column: span 2;
+}
+@media (max-width: 768px) {
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .form-grid-3 .full-width,
+  .form-grid-3 .full-width-2 {
+    grid-column: span 1;
+  }
+}
+.item-row-grid {
+  display: grid;
+  grid-template-columns: 2.2fr 0.8fr 1fr 0.8fr 0.8fr 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.85rem;
+}
+@media (max-width: 900px) {
+  .item-row-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+</style>
+
+<script>
+(function(){
+  const addBtn = document.getElementById('add-invoice-item-btn');
+  const itemsWrapper = document.getElementById('invoice-items-wrapper');
+  const totalFormsInput = document.querySelector('[name="{{ formset.prefix }}-TOTAL_FORMS"]');
+
+  if (addBtn && itemsWrapper && totalFormsInput) {
+    addBtn.addEventListener('click', function(){
+      let total = parseInt(totalFormsInput.value, 10);
+      const firstRow = itemsWrapper.querySelector('.item-row-grid');
+      if (!firstRow) return;
+
+      const newRow = firstRow.cloneNode(true);
+      const regex = new RegExp('{{ formset.prefix }}-0-', 'g');
+
+      newRow.innerHTML = newRow.innerHTML.replace(regex, `{{ formset.prefix }}-${total}-`);
+      
+      newRow.querySelectorAll('input:not([type="hidden"]), select').forEach(el => {
+        if (el.type === 'checkbox') {
+          el.checked = false;
+        } else if (el.name.includes('unit')) {
+          el.value = 'Pcs';
+        } else if (el.name.includes('quantity')) {
+          el.value = '1';
+        } else if (el.name.includes('gst_percent')) {
+          el.value = '18.00';
+        } else {
+          el.value = '';
+        }
+      });
+
+      itemsWrapper.appendChild(newRow);
+      totalFormsInput.value = total + 1;
+    });
+  }
+})();
+</script>
 {% endblock %}
