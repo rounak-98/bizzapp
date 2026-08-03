@@ -63,8 +63,8 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if invoice.quotation and invoice.quotation.customer %}
-                    {{ invoice.quotation.customer.name }}
+                    {% if invoice.get_customer %}
+                    <strong>{{ invoice.get_customer.name }}</strong>
                     {% else %}
                     -
                     {% endif %}

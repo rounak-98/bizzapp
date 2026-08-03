@@ -116,11 +116,15 @@ class Customer(models.Model):
     shopping_details = models.TextField(blank=True)
 
     def total_billed(self):
-        invoices = Invoice.objects.filter(quotation__customer=self)
+        invoices = Invoice.objects.filter(
+            models.Q(quotation__customer=self) | models.Q(customer=self)
+        ).distinct()
         return sum(inv.total_amount() for inv in invoices)
 
     def total_paid(self):
-        invoices = Invoice.objects.filter(quotation__customer=self)
+        invoices = Invoice.objects.filter(
+            models.Q(quotation__customer=self) | models.Q(customer=self)
+        ).distinct()
         return sum(inv.paid_amount() for inv in invoices)
 
     def balance_due(self):
@@ -365,6 +369,13 @@ class Invoice(models.Model):
         ("IGST", "IGST (Inter-state)"),
     ]
 
+    customer = models.ForeignKey(
+        Customer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Select customer for direct invoice",
+    )
     quotation = models.ForeignKey(
         Quotation, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -414,6 +425,14 @@ class Invoice(models.Model):
             total += ii.total
         disc = self.discount_amount or Decimal("0.00")
         return max(Decimal("0.00"), total - disc)
+
+    @property
+    def get_customer(self):
+        if self.customer:
+            return self.customer
+        if self.quotation:
+            return self.quotation.customer
+        return None
 
     def effective_tax_type(self):
         return self.quotation.tax_type if self.quotation else self.tax_type

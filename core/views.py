@@ -264,6 +264,7 @@ def convert_quotation(request, pk):
     invoice = Invoice.objects.filter(quotation=quotation).first()
     if not invoice:
         invoice = Invoice.objects.create(
+            customer=quotation.customer,
             quotation=quotation,
             gst_percent=quotation.gst_percent,
             discount_amount=quotation.discount_amount,

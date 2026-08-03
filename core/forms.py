@@ -81,6 +81,7 @@ class InvoiceForm(ForceSelectMixin, forms.ModelForm):
     class Meta:
         model = Invoice
         fields = [
+            "customer",
             "quotation",
             "invoice_number",
             "issued_date",
@@ -104,6 +105,7 @@ class InvoiceCreateForm(ForceSelectMixin, forms.ModelForm):
     class Meta:
         model = Invoice
         fields = [
+            "customer",
             "quotation",
             "invoice_number",
             "issued_date",

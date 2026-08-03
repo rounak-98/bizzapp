@@ -10,9 +10,13 @@
 
     <div class="form-grid-3">
       <div class="form-group full-width-2">
-        <label>Link Existing Quotation (Optional)</label>
+        <label>Select Customer *</label>
+        {{ form.customer }}
+        <small style="color: #94a3b8;">Select client for direct invoice (or leave blank if linking a quotation).</small>
+      </div>
+      <div class="form-group">
+        <label>Link Quotation (Optional)</label>
         {{ form.quotation }}
-        <small style="color: #94a3b8;">If selected, line items and customer info can be derived directly from quote.</small>
       </div>
       <div class="form-group">
         <label>Invoice Number (Auto if blank)</label>
