@@ -58,8 +58,9 @@ class QuotationForm(ForceSelectMixin, forms.ModelForm):
 class QuotationItemForm(ForceSelectMixin, forms.ModelForm):
     class Meta:
         model = QuotationItem
-        fields = ["item", "quantity", "unit_price", "gst_percent", "unit", "discount"]
+        fields = ["item", "description", "quantity", "unit_price", "gst_percent", "unit", "discount"]
         widgets = {
+            "description": forms.TextInput(attrs={"placeholder": "Sub-description (e.g. Rented for 15 days)"}),
             "unit_price": forms.NumberInput(attrs={"placeholder": "Default", "step": "0.01"}),
             "gst_percent": forms.NumberInput(attrs={"placeholder": "GST %", "step": "0.01"}),
             "discount": forms.NumberInput(attrs={"step": "0.01"}),
@@ -125,8 +126,9 @@ class InvoiceCreateForm(ForceSelectMixin, forms.ModelForm):
 class InvoiceItemForm(ForceSelectMixin, forms.ModelForm):
     class Meta:
         model = InvoiceItem
-        fields = ["item", "quantity", "unit_price", "gst_percent", "unit", "discount"]
+        fields = ["item", "description", "quantity", "unit_price", "gst_percent", "unit", "discount"]
         widgets = {
+            "description": forms.TextInput(attrs={"placeholder": "Sub-description (e.g. Rented for 15 days)"}),
             "unit_price": forms.NumberInput(attrs={"placeholder": "Default", "step": "0.01"}),
             "gst_percent": forms.NumberInput(attrs={"placeholder": "GST %", "step": "0.01"}),
             "discount": forms.NumberInput(attrs={"step": "0.01"}),

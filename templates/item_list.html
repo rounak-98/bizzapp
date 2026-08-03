@@ -32,7 +32,7 @@
                 <th>HSN / SAC Code</th>
                 <th>Description</th>
                 <th>Standard Unit Price</th>
-                <th>Quantity</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -42,7 +42,14 @@
                 <td>{{ item.hsn_code|default:"-" }}</td>
                 <td>{{ item.description|default:"-" }}</td>
                 <td><strong>₹{{ item.price|floatformat:2 }}</strong></td>
-                <td>{{ item.quantity }}</td>
+                <td>
+                    <a href="{% url 'edit_item' item.id %}" class="btn-secondary" style="padding: 0.3rem 0.64rem; font-size: 0.8rem; color: #38bdf8;">
+                        <i class="fa fa-pen-to-square"></i> Edit
+                    </a>
+                    <a href="{% url 'delete_item' item.id %}" class="btn-secondary" style="padding: 0.3rem 0.64rem; font-size: 0.8rem; color: #ef4444;">
+                        <i class="fa fa-trash"></i> Delete
+                    </a>
+                </td>
             </tr>
             {% empty %}
             <tr>

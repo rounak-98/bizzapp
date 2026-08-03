@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Create Invoice{% endblock %}
+{% block title %}{% if editing %}Edit Invoice - {{ invoice.invoice_number|default:invoice.id }}{% else %}Create Invoice{% endif %}{% endblock %}
 
 {% block content %}
 <div class="form-container" style="max-width: 960px;">
-  <h2><i class="fa fa-receipt"></i> Create Tax Invoice</h2>
+  <h2><i class="fa fa-receipt"></i> {% if editing %}Edit Tax Invoice: {{ invoice.invoice_number|default:invoice.id }}{% else %}Create Tax Invoice{% endif %}</h2>
 
   <form method="post">
     {% csrf_token %}
@@ -64,6 +64,9 @@
           <div class="form-group">
             <label>Product / Service *</label>
             {{ f.item }}
+            <div style="margin-top: 0.35rem;">
+              {{ f.description }}
+            </div>
           </div>
           <div class="form-group">
             <label>Qty</label>

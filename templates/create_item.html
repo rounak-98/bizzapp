@@ -1,13 +1,42 @@
 {% extends 'base.html' %}
+{% block title %}{% if editing %}Edit Product / Service - {{ item.name }}{% else %}Add Product / Service{% endif %}{% endblock %}
+
 {% block content %}
-<div class="form-container">
-  <h2>Add Item</h2>
+<div class="form-container narrow">
+  <h2><i class="fa fa-box-open"></i> {% if editing %}Edit Product / Service: {{ item.name }}{% else %}Add New Product / Service{% endif %}</h2>
+  
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn">
-      <i class="fa fa-box"></i> Save Item
-    </button>
+    <div class="form-group">
+      <label>Product / Service Name *</label>
+      {{ form.name }}
+    </div>
+    <div class="form-group">
+      <label>HSN / SAC Code</label>
+      {{ form.hsn_code }}
+    </div>
+    <div class="form-group">
+      <label>Default Description / Features</label>
+      {{ form.description }}
+    </div>
+    <div class="form-group">
+      <label>Quantity</label>
+      {{ form.quantity }}
+    </div>
+    <div class="form-group">
+      <label>Standard Unit Price (₹)</label>
+      {{ form.price }}
+    </div>
+    <div class="form-group">
+      <label>Default GST % Rate</label>
+      {{ form.gst_percent }}
+    </div>
+
+    <div style="margin-top: 1.5rem; text-align: right;">
+      <button type="submit" class="btn-primary">
+        <i class="fa fa-save"></i> Save Product / Service
+      </button>
+    </div>
   </form>
 </div>
 {% endblock %}

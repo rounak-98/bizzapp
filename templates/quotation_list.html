@@ -63,8 +63,11 @@
                         <a href="{% url 'quotation_detail' quotation.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
                             <i class="fa fa-eye"></i> View
                         </a>
-                        <a href="{% url 'edit_quotation' quotation.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                        <a href="{% url 'edit_quotation' quotation.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: #38bdf8;">
                             <i class="fa fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'delete_quotation' quotation.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: #ef4444;">
+                            <i class="fa fa-trash"></i> Delete
                         </a>
                         {% if quotation.status != 'Converted' %}
                         <a href="{% url 'convert_quotation' quotation.id %}" class="btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;" title="Convert to Invoice">

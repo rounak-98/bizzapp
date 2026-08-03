@@ -74,7 +74,13 @@
                 <td><strong>₹{{ invoice.total_amount|floatformat:2 }}</strong></td>
                 <td>
                     <a href="{% url 'invoice_detail' invoice.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
-                        <i class="fa fa-eye"></i> View / Print
+                        <i class="fa fa-eye"></i> View
+                    </a>
+                    <a href="{% url 'edit_invoice' invoice.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: #38bdf8;">
+                        <i class="fa fa-pen-to-square"></i> Edit
+                    </a>
+                    <a href="{% url 'delete_invoice' invoice.id %}" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: #ef4444;">
+                        <i class="fa fa-trash"></i> Delete
                     </a>
                 </td>
             </tr>

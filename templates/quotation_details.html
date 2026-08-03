@@ -29,6 +29,9 @@
         <a href="{% url 'edit_quotation' quotation.id %}" class="btn-secondary">
             <i class="fa fa-edit"></i> Edit
         </a>
+        <a href="{% url 'delete_quotation' quotation.id %}" class="btn-secondary" style="color: #ef4444;">
+            <i class="fa fa-trash"></i> Delete
+        </a>
         
         {% if quotation.status != 'Converted' %}
         <a href="{% url 'convert_quotation' quotation.id %}" class="btn-success" onclick="return confirm('Convert this quotation to an official Tax Invoice?')">
@@ -141,7 +144,9 @@
                 <td style="padding: 0.75rem 0.4rem; text-align: left;">{{ forloop.counter }}</td>
                 <td style="padding: 0.75rem 0.4rem; text-align: left;">
                     <div style="font-weight: 800; color: #000;">{{ qi.item.name }}</div>
-                    {% if qi.item.description %}
+                    {% if qi.description %}
+                    <div style="font-size: 0.8rem; color: #475569; margin-top: 0.15rem; font-weight: 500;">{{ qi.description }}</div>
+                    {% elif qi.item.description %}
                     <div style="font-size: 0.78rem; color: #64748b; margin-top: 0.15rem;">{{ qi.item.description }}</div>
                     {% endif %}
                 </td>

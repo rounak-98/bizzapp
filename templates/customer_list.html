@@ -53,7 +53,13 @@
                 </td>
                 <td>
                     <a href="{% url 'customer_statement' customer.id %}" class="btn-secondary" style="padding: 0.3rem 0.64rem; font-size: 0.8rem;">
-                        <i class="fa fa-file-invoice"></i> Ledger Statement
+                        <i class="fa fa-file-invoice"></i> Ledger
+                    </a>
+                    <a href="{% url 'edit_customer' customer.id %}" class="btn-secondary" style="padding: 0.3rem 0.64rem; font-size: 0.8rem; color: #38bdf8;">
+                        <i class="fa fa-pen-to-square"></i> Edit
+                    </a>
+                    <a href="{% url 'delete_customer' customer.id %}" class="btn-secondary" style="padding: 0.3rem 0.64rem; font-size: 0.8rem; color: #ef4444;">
+                        <i class="fa fa-trash"></i> Delete
                     </a>
                 </td>
             </tr>

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Delete Customer - BizApp{% endblock %}
+
+{% block content %}
+<div class="form-container" style="max-width: 500px; margin: 3rem auto; text-align: center;">
+    <div style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <h2>Delete Customer</h2>
+    <p style="color: #94a3b8; margin: 1rem 0;">Are you sure you want to delete customer <strong>"{{ customer.name }}"</strong>? This action cannot be undone.</p>
+    
+    <form method="post" style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+        {% csrf_token %}
+        <a href="{% url 'customer_list' %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary" style="background: #ef4444; border-color: #ef4444;">
+            <i class="fa-solid fa-trash"></i> Confirm Delete
+        </button>
+    </form>
+</div>
+{% endblock %}

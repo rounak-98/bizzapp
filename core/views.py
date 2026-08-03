@@ -162,6 +162,26 @@ def create_customer(request):
     return render(request, "create_customer.html", {"form": form})
 
 
+def edit_customer(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    if request.method == "POST":
+        form = CustomerForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            return redirect("customer_list")
+    else:
+        form = CustomerForm(instance=customer)
+    return render(request, "create_customer.html", {"form": form, "editing": True, "customer": customer})
+
+
+def delete_customer(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    if request.method == "POST":
+        customer.delete()
+        return redirect("customer_list")
+    return render(request, "delete_customer_confirm.html", {"customer": customer})
+
+
 def create_item(request):
     if request.method == "POST":
         form = ItemForm(request.POST)
@@ -171,6 +191,26 @@ def create_item(request):
     else:
         form = ItemForm()
     return render(request, "create_item.html", {"form": form})
+
+
+def edit_item(request, pk):
+    item = get_object_or_404(Item, pk=pk)
+    if request.method == "POST":
+        form = ItemForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            return redirect("item_list")
+    else:
+        form = ItemForm(instance=item)
+    return render(request, "create_item.html", {"form": form, "editing": True, "item": item})
+
+
+def delete_item(request, pk):
+    item = get_object_or_404(Item, pk=pk)
+    if request.method == "POST":
+        item.delete()
+        return redirect("item_list")
+    return render(request, "delete_item_confirm.html", {"item": item})
 
 
 def create_quotation(request):
@@ -234,6 +274,7 @@ def convert_quotation(request, pk):
             InvoiceItem.objects.create(
                 invoice=invoice,
                 item=q_item.item,
+                description=q_item.description,
                 quantity=q_item.quantity,
                 unit_price=q_item.unit_price,
                 gst_percent=q_item.gst_percent,
@@ -290,6 +331,41 @@ def create_invoice(request):
         form = InvoiceCreateForm()
         formset = InvoiceItemFormSet()
     return render(request, "create_invoice.html", {"form": form, "formset": formset})
+
+
+def edit_invoice(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+    if request.method == "POST":
+        form = InvoiceForm(request.POST, instance=invoice)
+        formset = InvoiceItemFormSet(request.POST, instance=invoice)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect("invoice_detail", pk=invoice.pk)
+    else:
+        form = InvoiceForm(instance=invoice)
+        formset = InvoiceItemFormSet(instance=invoice)
+    return render(
+        request,
+        "create_invoice.html",
+        {"form": form, "formset": formset, "editing": True, "invoice": invoice},
+    )
+
+
+def delete_invoice(request, pk):
+    invoice = get_object_or_404(Invoice, pk=pk)
+    if request.method == "POST":
+        invoice.delete()
+        return redirect("invoice_list")
+    return render(request, "delete_invoice_confirm.html", {"invoice": invoice})
+
+
+def delete_quotation(request, pk):
+    quotation = get_object_or_404(Quotation, pk=pk)
+    if request.method == "POST":
+        quotation.delete()
+        return redirect("quotation_list")
+    return render(request, "delete_quotation_confirm.html", {"quotation": quotation})
 
 
 def performa_list(request):

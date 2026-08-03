@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block title %}Add Customer{% endblock %}
+{% block title %}{% if editing %}Edit Customer - {{ customer.name }}{% else %}Add Customer{% endif %}{% endblock %}
 
 {% block content %}
 <div class="form-container narrow">
-  <h2><i class="fa fa-user-plus"></i> Add New Customer</h2>
+  <h2><i class="fa fa-user"></i> {% if editing %}Edit Customer: {{ customer.name }}{% else %}Add New Customer{% endif %}</h2>
   
   <form method="post">
     {% csrf_token %}

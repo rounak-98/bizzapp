@@ -20,7 +20,13 @@
         </form>
     </div>
 
-    <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <a href="{% url 'edit_invoice' invoice.id %}" class="btn-secondary" style="color: #38bdf8;">
+            <i class="fa fa-pen-to-square"></i> Edit
+        </a>
+        <a href="{% url 'delete_invoice' invoice.id %}" class="btn-secondary" style="color: #ef4444;">
+            <i class="fa fa-trash"></i> Delete
+        </a>
+
         <!-- WhatsApp Share Button -->
         <button onclick="shareWhatsApp('{{ invoice.invoice_number|default:invoice.id }}', '{{ invoice.total_amount|floatformat:2 }}', '{{ invoice.balance_due|floatformat:2 }}', '{% url 'invoice_pdf' invoice.id %}')" class="btn-success">
             <i class="fa-brands fa-whatsapp"></i> Share on WhatsApp
@@ -168,7 +174,9 @@
                 <td style="padding: 0.75rem 0.4rem; text-align: left;">{{ forloop.counter }}</td>
                 <td style="padding: 0.75rem 0.4rem; text-align: left;">
                     <div style="font-weight: 800; color: #000;">{{ item.item.name }}</div>
-                    {% if item.item.description %}
+                    {% if item.description %}
+                    <div style="font-size: 0.8rem; color: #475569; margin-top: 0.15rem; font-weight: 500;">{{ item.description }}</div>
+                    {% elif item.item.description %}
                     <div style="font-size: 0.78rem; color: #64748b; margin-top: 0.15rem;">{{ item.item.description }}</div>
                     {% endif %}
                 </td>

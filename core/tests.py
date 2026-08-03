@@ -45,3 +45,30 @@ class TotalsTestCase(TestCase):
         # Quote subtotal after disc = 95 - 10 = 85.00
         self.assertEqual(q.subtotal(), Decimal("95.00"))
         self.assertEqual(q.subtotal_after_discount(), Decimal("85.00"))
+
+    def test_line_item_description_and_editing(self):
+        q = Quotation.objects.create(customer=self.customer)
+        qi = QuotationItem.objects.create(
+            quotation=q,
+            item=self.item1,
+            quantity=1,
+            description="Rented for 15 days",
+        )
+        self.assertEqual(qi.description, "Rented for 15 days")
+
+        # Test edit item view
+        response = self.client.post(
+            f"/items/{self.item1.id}/edit/",
+            {
+                "name": "Updated Widget",
+                "hsn_code": "8471",
+                "description": "Premium Widget",
+                "quantity": 20,
+                "price": "149.99",
+                "gst_percent": "18.00",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.item1.refresh_from_db()
+        self.assertEqual(self.item1.name, "Updated Widget")
+        self.assertEqual(self.item1.price, Decimal("149.99"))

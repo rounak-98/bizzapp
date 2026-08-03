@@ -281,6 +281,11 @@ class Quotation(models.Model):
 class QuotationItem(models.Model):
     quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    description = models.TextField(
+        blank=True,
+        default="",
+        help_text="Sub-description / notes (e.g. Rented for 15 days, Serial #)",
+    )
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(
         max_digits=10,
@@ -491,6 +496,11 @@ class Invoice(models.Model):
 class InvoiceItem(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    description = models.TextField(
+        blank=True,
+        default="",
+        help_text="Sub-description / notes (e.g. Rented for 15 days, Serial #)",
+    )
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
